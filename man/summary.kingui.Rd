@@ -1,0 +1,76 @@
+\name{summary.kingui}
+\alias{summary}
+\alias{summary.kingui}
+\title{S3 summary method for class 'kingui'}
+\usage{
+  summary(object, data = TRUE, distimes = TRUE, ff = TRUE,
+    cov = FALSE,version="1.2011 .922.1530",...)
+}
+\arguments{
+  \item{object}{A fitted object of class 'kingui' from the
+  result of \code{\link{mkinfit.full }} or
+  \code{\link{IRLSkinfit.full}}}
+
+  \item{data}{If TRUE, include in the returned values a
+  data frame containing the observed and predicted values
+  with residuals and estimated standard deviations or
+  weights.}
+
+  \item{distimes}{If TRUE, DT50 and DT90 values should be
+  included.}
+
+  \item{ff}{If TRUE, the formation fraction should be
+  calculated from the estimated transformed parameters.}
+
+  \item{cov}{If TRUE, parameter covariances should be
+  calculated.}
+
+  \item{version}{A version number indicating which version
+  of the fit function has been used.}
+
+  \item{...}{Optional arguments passed to methods like
+  'print'}
+}
+\value{
+  The summary function returns a list of components from
+  the results of the optimizat ion routine used.
+  \item{par}{The fitted parameter values with corresponding
+  standard error and t-test p values.} \item{version}{The
+  version of function used.} \item{pnames}{Parameter
+  names.} \item{diffs}{The differential equations used in
+  the model.} \item{data}{A data frame that will be
+  printed.} \item{start}{The starting values and bounds for
+  the parameters.} \item{fixed}{The fixed values for model
+  parameters. } \item{start0}{The starting values for the
+  transformed parameters.} \item{fixed0}{The fixed values
+  for the transformed parameters.} \item{errmin}{Chi2 error
+  level and other related statistics for goodness-of-fit
+  assessment. } \item{distimes}{The DT50 and DT90 values.}
+  \item{ff}{The formation fractions calculated from the
+  fitted parameters.} \item{outpartri}{Output
+  parameterization.} \item{optimmethod}{Optimization method
+  used in the final fitting step and in calculating
+  Hessian. } \item{residuals}{The residuals.}
+  \item{residualVariance}{The variance of the residuals.}
+  \item{sigma}{The standard deviation of the residuals.}
+  \item{df}{Degree of freedom for the residuals}
+  \item{cov.unscaled}{Unscaled Covariance}
+  \item{cov.scaled}{Scaled Covariance.}
+  \item{info}{Information inherated from the fitting
+  procedure} \item{niter}{Number of iterations.}
+  \item{stopmess}{Warning message.}
+}
+\description{
+  Lists model equations, the chi2 error levels calculated
+  according to FOCUS guidance (2006) and optionally the
+  data, consisting of observed, predicted and residual
+  values, the correlation matrix and so on.
+}
+\details{
+  Expanded from \code{\link{summary.modFit}} and
+  \code{\link{summary.mkinfit}}
+}
+\author{
+  Zhenglei Gao
+}
+

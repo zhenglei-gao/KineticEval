@@ -1,0 +1,26 @@
+Package: KineticEval
+Type: Package
+Title: Kinetic Evaluations by NLS, IRLS and MCMC
+Version: 1.0
+Date: 2012-03-14
+Author: Zhenglei Gao
+Maintainer: Who to complain to <zhenglei.gao@bayer.com>
+Description: More about what it does (maybe more than one line)
+Depends:
+    R (>= 2.12)
+Imports:
+    mkin,
+    FME,
+    Rsolnp
+Suggests:
+    MASS
+License: GPL (>= 2)
+Collate:
+    'IRLSkinfit.full.R'
+    'kingraph.R'
+    'kingui.control.r'
+    'KinGUI2-package.r'
+    'kinplot.R'
+    'mcmckinfit.full.r'
+    'mkinfit.full.R'
+    'mkinmod.full.r'

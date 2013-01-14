@@ -1,0 +1,44 @@
+\name{chi2err}
+\alias{chi2err}
+\title{Calculate model error at which chi-square test is passed.}
+\usage{
+  chi2err(errdata, n.parms, errobserved, alpha = 0.05)
+}
+\arguments{
+  \item{errdata}{A data frame with mean observed values in
+  column named 'value_mean' and predicted values in column
+  'value_pred'.}
+
+  \item{n.parms}{The number of optimized parameters to be
+  taken into account for the data series.}
+
+  \item{errobserved}{A data frame with the true observed
+  values instead of the mean values for repeated
+  measurements.}
+
+  \item{alpha}{The confidence level chosen for the
+  chi-squared test.}
+}
+\value{
+  A list of component to assess the model goodness-of-fit
+  including: \item{err.min}{Chi2 error level}
+  \item{n.optim}{Number of parameters} \item{df}{Degree of
+  freedom} \item{RMSE}{The root mean squared error.}
+  \item{EF}{Model efficiency} \item{R2}{Coefficient of
+  determination}
+}
+\description{
+  This function calculates the smallest relative error
+  resulting in passing the chi-squared test as defined in
+  the FOCUS kinetics report from 2006.
+}
+\details{
+  This function is used internally by
+  \code{\link{mkinfit.full}},
+  \code{\link{IRLSkinfit.full}}, and
+  \code{\link{mcmckinfit.full}}.
+}
+\author{
+  Zhenglei Gao
+}
+

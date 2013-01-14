@@ -1,0 +1,27 @@
+\name{EF}
+\alias{EF}
+\title{Calculating the Model Efficiency}
+\usage{
+  EF(o, c)
+}
+\arguments{
+  \item{o}{Observed values.}
+
+  \item{c}{Predicted values using model.}
+}
+\value{
+  Model efficiency(EF) ranges from negative infinity to 1.
+}
+\description{
+  Calculating the Model Efficiency according to Focus
+  Kinetics Guidelines.
+}
+\details{
+  For EF>0, the values gives an indication of fraction of
+  the total variance of the data that can be explained by
+  the model.
+}
+\author{
+  Zhenglei Gao
+}
+
