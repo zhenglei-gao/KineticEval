@@ -47,6 +47,7 @@
 ##'
 ##' kingui.control()
 ##'
+##' @export
 kingui.control <- function (method='solnp',maxIter=100,tolerance=1e-8,odesolver='lsoda',atol=1e-9,rtol=1e-10,rhobeg=0.05,iprint=1,trace=0,goMarq=0,delta=1e-6,rho=1,submethod='Port',Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=1,...)
 {
 

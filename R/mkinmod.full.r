@@ -56,6 +56,7 @@
 ##' @author Zhenglei Gao
 ##' @seealso \code{\link{mkinmod}}, \code{\link{CompleteCompound}}
 ##' @keywords Kinetic-Model
+##' @return A list with  "mkinmod.full" in the class attribute. 
 ##' @examples
 ##'
 ##' SFO_SFO_full <- mkinmod.full(Parent = list(type = "SFO", to = "Metab", sink = TRUE,
@@ -86,7 +87,10 @@
 ##'                       upper = Inf),
 ##'                     residue =c( 0.0,  0.0,  0.0,  1.6,  4.0, 12.3, 13.5,
 ##' 12.7, 11.4, 11.6, 10.9,  9.5,  7.6))
-##'
+##' )
+##' @keywords Kinetic-Models
+##' @export
+##' @exportClass mkinmod.full
 mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),outpartri=c('default','water-sediment','advanced'),data=NULL,weight=NULL)
 {## Example usage ##############################################################
     ## a <- mkinmod.full(
@@ -485,6 +489,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
             }##end for if(outpartri=='default')
         }##end for if(inpartri=='water-sediment')
     } ## end ( for (varname in obs_vars) )#end of tranfer between compartments.
+ 
     ##### OUTPUT #####
     names(parms.ini) <- parms
     names(parms.lower) <- parms
@@ -506,7 +511,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
     lower <- c(state.lower,parms.lower)
     upper <- c(state.upper,parms.upper)
 
-    colnames(weightmat) <- obs_vars
+    if(!is.null(weightmat))  colnames(weightmat) <- obs_vars
     if(!is.null(start)) start$type <-  rep("deparm", nrow(start))
     model <- list(diffs = diffs, parms = parms, map = map,parms.ini=parms.ini,state.ini=state.ini,lower=lower,upper=upper,fixed_parms=fixed_parms,fixed_flag=fixed_flag,fixed_initials=fixed_initials,residue=as.data.frame(residue),data0=as.data.frame(data0),weightmat=as.data.frame(weightmat),start=start)
 

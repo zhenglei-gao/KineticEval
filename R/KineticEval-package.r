@@ -20,7 +20,7 @@
 #' Zhenglei Gao \email{zhenglei.gao@@bayer.com}
 #'
 #' Maintainer: Zhenglei Gao \email{zhenglei.gao@@bayer.com}
-#' @name KinGUI2-package
+#' @name KineticEval-package
 #' @docType package
 #' @title Kinetic Evaluations in R
 #' @keywords package
