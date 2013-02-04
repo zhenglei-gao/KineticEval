@@ -1,0 +1,30 @@
+CHANGES IN knitr VERSION 0.1
+
+NEW FEATURES
+
+  - first version of KineticEval: it covers most features in KinGUII and was developed based on the package **mkinfit**;
+  see package homepage for documentation and examples:
+  http://github.com/zhenglei-gao/KineticEval
+  
+  - added a demo named `simpleEval`
+  
+  - added a function `update_kin_mod` to compare fitting results from different methods or algorithms.
+
+MAJOR CHANGES
+
+  - DFOP model for metabolite is re-established in the correct form.
+  
+  - Combined `IRLSkinfit.full`, `mkinfit.full`, `mcmckinfit.full` into a single function to avoid replicated codes.
+
+BUG FIXES
+
+  - fixed #1: when the inline R code returns `NA_real_`, the scientific
+  notation of numbers will run into errors (thanks, Rafik)
+
+  - fixed #2: blabla
+  
+MISC
+
+  - in this NEWS file, #n means the issue number on GitHub, e.g. #142 is
+  https://github.com/zhenglei-gao/KineticEval/issues/142
+

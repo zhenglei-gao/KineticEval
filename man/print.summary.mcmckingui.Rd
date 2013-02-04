@@ -2,7 +2,7 @@
 \alias{print.summary.mcmckingui}
 \title{S3 print method for class \code{summary.mcmckingui}}
 \usage{
-  print.summary.mcmckingui(x,
+  \method{print}{summary.mcmckingui} (x,
     digits = max(3, getOption("digits") - 3),
     detailed = FALSE, ...)
 }

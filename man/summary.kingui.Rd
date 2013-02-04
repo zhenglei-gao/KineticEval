@@ -1,14 +1,14 @@
 \name{summary.kingui}
-\alias{summary}
 \alias{summary.kingui}
 \title{S3 summary method for class 'kingui'}
 \usage{
-  summary(object, data = TRUE, distimes = TRUE, ff = TRUE,
-    cov = FALSE,version="1.2011 .922.1530",...)
+  \method{summary}{kingui} (object, data = TRUE,
+    distimes = TRUE, ff = TRUE, cov = FALSE,
+    version = "1.2011.922.1530", ...)
 }
 \arguments{
   \item{object}{A fitted object of class 'kingui' from the
-  result of \code{\link{mkinfit.full }} or
+  result of \code{\link{mkinfit.full}} or
   \code{\link{IRLSkinfit.full}}}
 
   \item{data}{If TRUE, include in the returned values a

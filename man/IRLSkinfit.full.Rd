@@ -74,6 +74,7 @@
   parameters.
 }
 \examples{
+if(require(mkin)){
 complex <- mkinmod.full(
  parent = list(type = "SFO", to = c("A1", "B1", "C1"), sink = FALSE),
  A1 = list(type = "SFO", to = "A2"),
@@ -82,7 +83,7 @@ complex <- mkinmod.full(
  A2 = list(type = "SFO"),
  inpartri='default',
  outpartri='default',
- data=schaefer07_complex_case,
+ data=mkin::schaefer07_complex_case,
  weight=NULL)
 Fit    <- IRLSkinfit.full(
            complex,
@@ -97,6 +98,7 @@ Fit    <- IRLSkinfit.full(
            irls.control = list(
                              maxIter = 10,
                            tolerance = 0.001))
+}
 }
 \author{
   Zhenglei Gao

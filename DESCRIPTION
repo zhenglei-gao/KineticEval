@@ -4,23 +4,38 @@ Title: Kinetic Evaluations by NLS, IRLS and MCMC
 Version: 1.0
 Date: 2012-03-14
 Author: Zhenglei Gao
-Maintainer: Who to complain to <zhenglei.gao@bayer.com>
+Maintainer: Zhenglei Gao <zhenglei.gao@bayer.com>
 Description: More about what it does (maybe more than one line)
 Depends:
     R (>= 2.12)
 Imports:
     mkin,
     FME,
-    Rsolnp
+    Rsolnp,
+    optimx,
+    BB,
+    minqa,
+    deSolve
 Suggests:
-    MASS
+    MASS,
+    ucminf,
+    Rcgmin,
+    Rvmmin,
+    setRNG
 License: GPL (>= 2)
 Collate:
-    'IRLSkinfit.full.R'
-    'kingraph.R'
+    'kingraph.r'
     'kingui.control.r'
-    'KinGUI2-package.r'
-    'kinplot.R'
+    'kinplot.r'
     'mcmckinfit.full.r'
-    'mkinfit.full.R'
     'mkinmod.full.r'
+    'FOCUS2006A.r'
+    'FOCUS2006B.r'
+    'FOCUS2006C.r'
+    'FOCUS2006D.r'
+    'KineticEval-package.r'
+    'list2ascii.r'
+    'modCost.r'
+    'modFit1.r'
+    'IRLSkinfit.full.r'
+    'mkinfit.full.r'

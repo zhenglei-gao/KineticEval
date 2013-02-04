@@ -14,9 +14,19 @@
   \item{filename}{The file in which the graph data will be
   stored.}
 
+  \item{xlab}{xlab}
+
+  \item{ylab}{ylab}
+
+  \item{legend}{logical, whether to have legend}
+
+  \item{length.out}{the number of points to be ploted}
+
   \item{xlim}{The plot range for x axis.}
 
   \item{ylim}{The plot range for y axis.}
+
+  \item{...}{other parameters passed to plot.}
 }
 \value{
   \code{NULL}

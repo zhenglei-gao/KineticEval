@@ -25,7 +25,7 @@
 ##' @param data Optional. Data can be read from a data file.
 ##' @param weight Optional. General weighting schemes using a weight matrix.
 ##' @return A list of class 'mkinmod.full' for use with
-##' \code{\link{mkinfit.full}},\code{\link{IRLSkinfit.full}} and
+##' \code{mkinfit.full},\code{\link{IRLSkinfit.full}} and
 ##' \code{\link{mcmckinfit.full}} containing:
 ##'
 ##' \item{diffs}{ A vector of string representations of differential equations,
@@ -54,7 +54,7 @@
 ##' \code{mkinfit.gui},\code{IRLSkinfit.gui} and
 ##' \code{mcmckinfit.gui}.
 ##' @author Zhenglei Gao
-##' @seealso \code{\link{mkinmod}}, \code{\link{CompleteCompound}}
+##' @seealso \code{\link{mkinmod}}, \code{\link{completeCompound}}
 ##' @keywords Kinetic-Model
 ##' @return A list with  "mkinmod.full" in the class attribute. 
 ##' @examples

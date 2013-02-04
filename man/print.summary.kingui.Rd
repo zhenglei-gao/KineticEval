@@ -2,7 +2,9 @@
 \alias{print.summary.kingui}
 \title{Print method for \code{\link{summary.kingui}}}
 \usage{
-  summary(Fit))
+  \method{print}{summary.kingui} (x,
+    digits = max(3, getOption("digits") - 3),
+    detailed = FALSE, ...)
 }
 \arguments{
   \item{x}{An object of class \code{summary.kingui}}

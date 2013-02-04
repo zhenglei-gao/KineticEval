@@ -1,7 +1,6 @@
 \name{mkinfit.full}
 \alias{mkinfit.full}
 \alias{mkinfit.gui}
-\alias{summary.kingui}
 \title{Fit a kinetic model using the NLS or WNLS algorithm.}
 \usage{
   mkinfit.full(mkinmodini, eigen = FALSE, plot = FALSE,
@@ -10,10 +9,9 @@
     ctr = kingui.control(), update = NULL, ...)
 }
 \arguments{
-  \item{mkinmodini}{A list of class
-  \code{\link{mkinmod.gui}}, containing the kinetic model
-  to be fitted to the data, and the initial parameter
-  values, the observed data.}
+  \item{mkinmodini}{A list of class \code{mkinmod.full},
+  containing the kinetic model to be fitted to the data,
+  and the initial parameter values, the observed data.}
 
   \item{eigen}{If TRUE, the solution of the system of
   differential equations should be based on the spectral
@@ -36,8 +34,8 @@
   \code{NULL}, then the residuals are not weighed.  In the
   GUI version, there is no need to consider this argument
   since a default weight one matrix is setup in
-  \code{\link{mkinmod.gui}}. The err argument turned into
-  'err' automatically in the codes.}
+  \code{mkinmod.gui}. The err argument turned into 'err'
+  automatically in the codes.}
 
   \item{weight}{only if \code{err}=\code{NULL}: how to
   weigh the residuals, one of "none", "std", "mean", see
@@ -51,6 +49,9 @@
   algorithm to replace the default values including maximum
   iterations and absolute error tolerance.  Defaults to the
   output of \code{\link{kingui.control}}.}
+
+  \item{update}{An object either of class \code{kingui} or
+  a vector of to be optimized parameters}
 
   \item{\dots}{Further arguments that will be passed to
   \code{\link{modFit}}.}
@@ -68,6 +69,9 @@
   the specified initial or fixed parameters and starting
   values. This is deprecated! Use
   \code{\link{mkinfit.full}} instead.
+}
+\details{
+  ##
 }
 \examples{
 \dontrun{

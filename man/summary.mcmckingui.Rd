@@ -2,9 +2,9 @@
 \alias{summary.mcmckingui}
 \title{S3 summary method for class \code{mcmckingui}}
 \usage{
-  summary(object, remove = NULL,
-    data=TRUE,distimes=TRUE,ff=TRUE,
-    version="1.2011.922.1530",...)
+  \method{summary}{mcmckingui} (object, remove = NULL,
+    data = TRUE, distimes = TRUE, ff = TRUE,
+    version = "1.2011.922.1530", ...)
 }
 \arguments{
   \item{object}{A fitted object of class \code{mcmckingui}

@@ -33,8 +33,8 @@
 }
 \value{
   A list of class 'mkinmod.full' for use with
-  \code{\link{mkinfit.full}},\code{\link{IRLSkinfit.full}}
-  and \code{\link{mcmckinfit.full}} containing:
+  \code{mkinfit.full},\code{\link{IRLSkinfit.full}} and
+  \code{\link{mcmckinfit.full}} containing:
 
   \item{diffs}{ A vector of string representations of
   differential equations, one for each modelling
@@ -57,6 +57,8 @@
   of string representations of the transformation between
   the formation fractions in the model and the transfomed
   formation fractions in the optimization process.}
+
+  A list with "mkinmod.full" in the class attribute.
 }
 \description{
   GUI version of \code{\link{mkinmod}}. The function takes
@@ -101,12 +103,14 @@ SFO_SFO_full <- mkinmod.full(Parent = list(type = "SFO", to = "Metab", sink = TR
                       upper = Inf),
                     residue =c( 0.0,  0.0,  0.0,  1.6,  4.0, 12.3, 13.5,
 12.7, 11.4, 11.6, 10.9,  9.5,  7.6))
+)
 }
 \author{
   Zhenglei Gao
 }
 \seealso{
-  \code{\link{mkinmod}}, \code{\link{CompleteCompound}}
+  \code{\link{mkinmod}}, \code{\link{completeCompound}}
 }
 \keyword{Kinetic-Model}
+\keyword{Kinetic-Models}
 

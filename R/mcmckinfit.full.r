@@ -5,7 +5,7 @@
 ##' \code{\link{modMCMC}} in the \code{\link{FME}} package.
 ##'
 ##'
-##' @aliases mcmckinfit.full summary.mcmckingui plot.mcmckingui
+##' @aliases mcmckinfit.gui
 ##' @param mkinmodini  A list of class
 ##' \code{\link{mkinmod.full}}, containing the kinetic model to be fitted to the
 ##' data, and the initial parameter values, the observed data.
@@ -58,6 +58,19 @@
 ##' starting values for MCMC.
 ##' @param update if not NULL, using the
 ##' values in the update as the starting values for MCMC.
+##' @param err Either \code{NULL}, or the name
+##' of the column with the \emph{error} estimates, used to weigh the residuals
+##' (see details of \code{\link{modCost}}); if \code{NULL}, then the residuals
+##' are not weighed.  In the GUI version, there is no need to consider this
+##' argument since a default weight one matrix is setup in
+##' \code{mkinmod.gui}. The err argument turned into 'err' automatically
+##' in the codes.
+##' @param weight only if
+##' \code{err}=\code{NULL}: how to weigh the residuals, one of "none", "std",
+##' "mean", see details of \code{\link{modCost}}.
+##' @param scaleVar Will be passed to
+##' \code{\link{modCost}}. Default is not to scale Variables according to the
+##' number of observations.
 ##' @param \dots Further arguments that will
 ##' be passed to \code{\link{modFit}}.
 ##' @return  A list with "mcmckingui" and "modMCMC" in the class
@@ -917,8 +930,6 @@ mcmckinfit.full <- function (mkinmodini,eigen=FALSE,ctr=kingui.control(quiet.tol
 ##' correlation matrix and also the same summary statistics for class \code{modMCMC}
 ##'
 ##' @title S3 summary method for class \code{mcmckingui}
-##' @usage summary(object, remove = NULL, data=TRUE,distimes=TRUE,ff=TRUE,
-##' version="1.2011.922.1530",...)
 ##' @method summary mcmckingui
 ##' @param object A fitted object of class \code{mcmckingui} from the result of
 ##' \code{\link{mcmckinfit.full}}.
@@ -936,7 +947,7 @@ mcmckinfit.full <- function (mkinmodini,eigen=FALSE,ctr=kingui.control(quiet.tol
 ##' @seealso \code{\link{summary.kingui}}.
 ##' @author Zhenglei Gao
 ##' @S3method summary mcmckingui
-##'
+##' @rdname summary.mcmckingui
 summary.mcmckingui <- function (object, remove = NULL, data=TRUE,distimes=TRUE,ff=TRUE,version="1.2011.922.1530",...) {
     options(warn=-1)
   mcmc <- object$pars
@@ -1042,6 +1053,7 @@ summary.mcmckingui <- function (object, remove = NULL, data=TRUE,distimes=TRUE,f
 ##' S3 print method for class \code{summary.mcmckingui}
 ##'
 ##' @title S3 print method for class \code{summary.mcmckingui}
+##' @method print summary.mcmckingui
 ##' @param x An object of class \code{summary.mcmckingui}.
 ##' @param digits Number of digits to be printed after the decimal point.
 ##' @param detailed Not used.
@@ -1049,6 +1061,7 @@ summary.mcmckingui <- function (object, remove = NULL, data=TRUE,distimes=TRUE,f
 ##' @return \code{NULL}
 ##' @author Zhenglei Gao
 ##' @S3method print summary.mcmckingui
+##' @rdname print.summary.mcmckingui
 print.summary.mcmckingui <- function(x,digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
     cat(paste('Version:',x$version,'\n'))
     cat('\nR version: 2.12.2 (2011-02-25)\n ')
@@ -1126,12 +1139,14 @@ print.summary.mcmckingui <- function(x,digits = max(3, getOption("digits") - 3),
 ##' Make the density correlation and trace plots of the generated Markov Chains.
 ##'
 
-##' @param object An object of class
+##' @param x An object of class
 ##' 'mcmckingui'
+##' @param y NULL
 ##' @param fname1 The file name of the
 ##' density plot.
 ##' @param fname2 The file name of the
 ##' correlation plot.
+##' @param fname3 The file name of the trace plot
 ##' @param pch What kind of points to use in
 ##' the plots.
 ##' @param device The plot device to be
@@ -1143,14 +1158,16 @@ print.summary.mcmckingui <- function(x,digits = max(3, getOption("digits") - 3),
 ##' @note \code{plot.mcmckingui0} is a deprecated version to be used with the object
 ##' returned by \code{mcmckinfit.gui}
 ##' @author Zhenglei Gao
+##' @method plot mcmckingui
 ##' @S3method plot mcmckingui
-##'
-plot.mcmckingui <- function(object,fname1='density',fname2='correlation',fname3='trace',pch=1,device='wmf',...)
+##' @rdname plot.mcmckingui
+plot.mcmckingui <- function(x,y=NULL,fname1='density',fname2='correlation',fname3='trace',pch=1,device='wmf',...)
 {
     ## Make the density plot.
     ## Make the correlation plot
     ## Make the trace plot
-
+	object <- x
+	if(!is.null(y)) stop("do not try that!")
     if(device=='wmf') win.metafile(filename=paste(fname1,'wmf',sep='.'),width = 7,height = 7, pointsize = 12)
     if(device=='jpeg') jpeg(filename=paste(fname1,'jpeg',sep='.'),width = 700,height = 700, pointsize = 12)
     pnames <- colnames(object$pars)

@@ -2,16 +2,20 @@
 \alias{plot.mcmckingui}
 \title{S3 plot method to plot for calss 'mcmckingui'}
 \usage{
-  plot.mcmckingui(object, fname1 = "density",
-    fname2 = "correlation", fname3 = "trace", pch = 1,
-    device = "wmf", ...)
+  \method{plot}{mcmckingui} (x, y = NULL,
+    fname1 = "density", fname2 = "correlation",
+    fname3 = "trace", pch = 1, device = "wmf", ...)
 }
 \arguments{
-  \item{object}{An object of class 'mcmckingui'}
+  \item{x}{An object of class 'mcmckingui'}
+
+  \item{y}{NULL}
 
   \item{fname1}{The file name of the density plot.}
 
   \item{fname2}{The file name of the correlation plot.}
+
+  \item{fname3}{The file name of the trace plot}
 
   \item{pch}{What kind of points to use in the plots.}
 

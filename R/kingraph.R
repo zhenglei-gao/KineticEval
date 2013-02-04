@@ -5,15 +5,22 @@
 ##' @param fit An object of class 'kingui'.
 ##' @param filename The file in which the
 ##' graph data will be stored.
+##' @param xlab xlab
+##' @param ylab ylab
+##' @param legend logical, whether to have legend
+##' @param length.out the number of points to be ploted
 ##' @param xlim The plot range for x axis.
 ##' @param ylim The plot range for y axis.
+##' @param ... other parameters passed to plot.
 ##' @return \code{NULL}
 ##' @note This function only writes the data table for making the graph.
 ##' @author Zhenglei Gao
 ##' @seealso \code{\link{kinplot}}
 ##' @export
 ##'
-kingraph <- function(fit, filename='graphdata.txt',xlab = "Time", ylab = "Observed", xlim = c(1,1.05)*range(fit$data$time), ylim = c(1,1.05)*range((summary(fit))$data$observed, na.rm = TRUE), legend = TRUE, length.out=100,...)
+kingraph <- function(fit, filename='graphdata.txt',xlab = "Time", ylab = "Observed", 
+					 xlim = c(1,1.05)*range(fit$data$time), ylim = c(1,1.05)*range((summary(fit))$data$observed, na.rm = TRUE), 
+					 legend = TRUE, length.out=100,...)
 {
     ## function to generate the graph data.
     ## example usage:

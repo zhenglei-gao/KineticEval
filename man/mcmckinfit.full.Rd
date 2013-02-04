@@ -1,7 +1,6 @@
 \name{mcmckinfit.full}
 \alias{mcmckinfit.full}
-\alias{plot.mcmckingui}
-\alias{summary.mcmckingui}
+\alias{mcmckinfit.gui}
 \title{Fit a kinetic model using MCMC methods.}
 \usage{
   mcmckinfit.full(mkinmodini, eigen = FALSE,
@@ -89,6 +88,23 @@
 
   \item{update}{if not NULL, using the values in the update
   as the starting values for MCMC.}
+
+  \item{err}{Either \code{NULL}, or the name of the column
+  with the \emph{error} estimates, used to weigh the
+  residuals (see details of \code{\link{modCost}}); if
+  \code{NULL}, then the residuals are not weighed.  In the
+  GUI version, there is no need to consider this argument
+  since a default weight one matrix is setup in
+  \code{mkinmod.gui}. The err argument turned into 'err'
+  automatically in the codes.}
+
+  \item{weight}{only if \code{err}=\code{NULL}: how to
+  weigh the residuals, one of "none", "std", "mean", see
+  details of \code{\link{modCost}}.}
+
+  \item{scaleVar}{Will be passed to \code{\link{modCost}}.
+  Default is not to scale Variables according to the number
+  of observations.}
 
   \item{\dots}{Further arguments that will be passed to
   \code{\link{modFit}}.}

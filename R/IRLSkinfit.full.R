@@ -1042,12 +1042,10 @@ IRLSkinfit.full <- function(mkinmodini,
 ##'
 ##' Expanded from \code{\link{summary.modFit}} and \code{\link{summary.mkinfit}}
 ##' @title S3 summary method for class 'kingui'
-##' @usage summary(object, data = TRUE, distimes = TRUE, ff = TRUE, cov = FALSE,version="1.2011
-##' .922.1530",...)
-##' @aliases summary summary.kingui
 ##' @method summary kingui
-##' @param object A fitted object of class 'kingui' from the result of \code{\link{mkinfit.full
-##' }} or  \code{\link{IRLSkinfit.full}}
+##' @S3method summary kingui
+##' @param object A fitted object of class 'kingui' from the result of 
+##' \code{\link{mkinfit.full}} or  \code{\link{IRLSkinfit.full}}
 ##' @param data   If TRUE, include in the returned values a data frame containing the observed
 ##' and predicted values with residuals and estimated standard deviations or weights.
 ##' @param distimes If TRUE, DT50 and DT90 values should be included.
@@ -1085,8 +1083,7 @@ IRLSkinfit.full <- function(mkinmodini,
 ##' \item{niter}{Number of iterations.}
 ##' \item{stopmess}{Warning message.}
 ##' @author Zhenglei Gao
-##' @S3method summary kingui
-##' @exportClass summary.kingui
+##' @rdname summary.kingui
 summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov = FALSE,version="1.2011.922.1530",...) {
     options(warn=-1)
     param  <- object$par
@@ -1187,7 +1184,6 @@ myformat <- function(x,digits=4,...)
 ##'
 ##' Expanded from \code{\link{print.summary.modFit}} and \code{\link{print.summary.mkinfit}}
 ##' @title Print method for \code{\link{summary.kingui}}
-##' @usage summary(Fit))
 ##' @method print summary.kingui
 ##' @param x An object of class \code{summary.kingui}
 ##' @param digits How many digits should be printed after the decimal point.
@@ -1196,6 +1192,7 @@ myformat <- function(x,digits=4,...)
 ##' @return \code{NULL}
 ##' @author Zhenglei Gao
 ##' @S3method print summary.kingui
+##' @rdname print.summary.kingui
 print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
     cat(paste('Version:',x$version,'\n'))
     cat('\nR version: 2.12.2 (2011-02-25)\n ')
