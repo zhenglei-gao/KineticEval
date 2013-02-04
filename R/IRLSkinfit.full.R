@@ -18,6 +18,7 @@
 ##' @return A list with  "kingui", "mkinfit" and "modFit" in the class attribute. A summary can be obtained by \code{\link{summary.kingui}}.
 ##' @author Zhenglei Gao
 ##' @examples
+##' \dontrun{
 ##' if(require(mkin)){
 ##' complex <- mkinmod.full(
 ##'  parent = list(type = "SFO", to = c("A1", "B1", "C1"), sink = FALSE),
@@ -28,7 +29,7 @@
 ##'  inpartri='default',
 ##'  outpartri='default',
 ##'  data=mkin::schaefer07_complex_case,
-##'  weight=NULL)
+##'  weight=NULL) 
 ##' Fit    <- IRLSkinfit.full(
 ##'            complex,
 ##'               plot      = TRUE,
@@ -42,7 +43,7 @@
 ##'            irls.control = list(
 ##'                              maxIter = 10,
 ##'                            tolerance = 0.001))
-##'}
+##'}}
 ##' @keywords Kinetic-Evaluations
 ##' @export
 ##' @exportClass kingui

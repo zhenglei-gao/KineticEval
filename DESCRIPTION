@@ -15,7 +15,9 @@ Imports:
     optimx,
     BB,
     minqa,
-    deSolve
+    deSolve,
+    coda,
+    minpack.lm
 Suggests:
     MASS,
     ucminf,

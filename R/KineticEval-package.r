@@ -24,6 +24,14 @@
 #' @docType package
 #' @title Kinetic Evaluations in R
 #' @keywords package
+#' @import mkin
+#' @importFrom deSolve ode
+#' @importFrom FME modFit modMCMC
+#' @importFrom Rsolnp solnp
+#' @importFrom minqa bobyqa
+#' @importFrom coda traceplot as.mcmc
+#' @importFrom optimx optimx
+#' @importFrom minpack.lm nls.lm nls.lm.control
 #' @note This is based on the package \code{mkin} by Johannes Reinken.
 #'
 #' You are welcome to report other serious issues and bugs via

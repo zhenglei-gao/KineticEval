@@ -74,6 +74,7 @@
   parameters.
 }
 \examples{
+\dontrun{
 if(require(mkin)){
 complex <- mkinmod.full(
  parent = list(type = "SFO", to = c("A1", "B1", "C1"), sink = FALSE),
@@ -98,7 +99,7 @@ Fit    <- IRLSkinfit.full(
            irls.control = list(
                              maxIter = 10,
                            tolerance = 0.001))
-}
+}}
 }
 \author{
   Zhenglei Gao
