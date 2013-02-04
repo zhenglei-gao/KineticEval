@@ -1,6 +1,5 @@
 .gitignore
 .gitattributes
-tikzDictionary$
 aux$
 log$
 out$
@@ -9,3 +8,7 @@ NEWS.md
 README.md
 ^\.Rproj\.user$
 ^.*\.Rproj$
+\.Rhistory
+\.Rcheck
+\.tar\.gz$
+out
