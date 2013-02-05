@@ -1192,7 +1192,6 @@ plot.mcmckingui <- function(x,y=NULL,fname1='density',fname2='correlation',fname
 ##' Utility function to set the layout when making multiple plots on the same page.
 ##'
 ##' @title Set the layout when making multiple plots on the same page.
-##'
 ##' @param n number of plots to make
 ##' @return number of rows and columns in the layout
 ##' @author Zhenglei Gao
