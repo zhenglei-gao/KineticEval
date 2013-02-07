@@ -7,9 +7,9 @@ Author: Zhenglei Gao
 Maintainer: Zhenglei Gao <zhenglei.gao@bayer.com>
 Description: More about what it does (maybe more than one line)
 Depends:
-    R (>= 2.12)
+    R (>= 2.12),
+    mkin
 Imports:
-    mkin,
     FME,
     Rsolnp,
     optimx,
@@ -41,3 +41,4 @@ Collate:
     'modFit1.r'
     'IRLSkinfit.full.r'
     'mkinfit.full.r'
+    'BCS1.r'
