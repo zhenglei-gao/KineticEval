@@ -43,3 +43,8 @@ Collate:
     'mkinfit.full.r'
     'BCS1.r'
     'BCS2.r'
+    'andrew.r'
+    'compare_multi_kinmod.r'
+    'kin_mod_cost.r'
+    'update_kinmod.r'
+    'kin_mod.r'

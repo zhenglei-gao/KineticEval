@@ -1,0 +1,29 @@
+\name{kin_mod_cost}
+\alias{kin_mod_cost}
+\title{Cost of kinetic models}
+\usage{
+  kin_mod_cost(P, inside = FALSE, plot = TRUE, plottitle,
+    ...)
+}
+\arguments{
+  \item{P}{parameters}
+
+  \item{inside}{logical, whether the function is evaluated
+  inside a fit function.}
+
+  \item{plot}{logical, whether to make a plot}
+
+  \item{plottitle}{the title of the plot}
+
+  \item{...}{other parameters to be passed into plot}
+}
+\value{
+  the cost of the model of class modCost
+}
+\description{
+  Define the model cost function for kinetic models
+}
+\author{
+  Zhenglei Gao
+}
+
