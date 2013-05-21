@@ -3,12 +3,12 @@
 \title{Choose the algorithm to use and related control parameters in kinetic
 evaluations using NLS and IRLS.}
 \usage{
-  kingui.control(method = "solnp", maxIter = 100,
+  kingui.control(method = "LM", maxIter = 100,
     tolerance = 1e-08, odesolver = "lsoda", atol = 1e-09,
     rtol = 1e-10, rhobeg = 0.05, iprint = 1, trace = 0,
     goMarq = 0, delta = 1e-06, rho = 1, submethod = "Port",
-    Hmethod1 = "L-BFGS-B", Hmethod2 = "Marq",
-    quiet.tol = 1, ...)
+    Hmethod1 = "LM", Hmethod2 = "L-BFGS-B", quiet.tol = 1,
+    ...)
 }
 \arguments{
   \item{method}{The method to be used, one of "Rsolnp",

@@ -2,19 +2,19 @@
 ##'
 ##' Instead of implicitly assuming equal error variances or giving arbitrary weights decided by the researcher as in the NLS algorithm,  an iteratively reweighted least squares (IRLS) algorithm was implemented to obtain the maximum likelihood estimates of the kinetic model parameters.
 ##' @title Fit a kinetic model using the IRLS algorithm.
-##' @param mkinmodini  A list of class \code{\link{mkinmod.full}}, containing the kinetic model to be fitted to the data, and the initial parameter values, the observed data.
-##' @param eigen  If TRUE,  the solution of the system of differential equation should be based on the spectral decomposition of the coefficient matrix in cases that this is possible.
+##' @param mkinmodini A list of class \code{\link{mkinmod.full}}, containing the kinetic model to be fitted to the data, and the initial parameter values, the observed data.
+##' @param eigen If TRUE,  the solution of the system of differential equation should be based on the spectral decomposition of the coefficient matrix in cases that this is possible.
 ##' @param plot If TRUE,the observed values and the numerical solutions should be plotted at each stage of the optimisation.
 ##' @param plottitle The title of the plot for visualizing the optimization process.
-##' @param quiet  If TRUE, suppress printing out the current model cost after each(>1) improvement.
-##' @param err  See argumetns of \code{\link{mkinfit.full}}
+##' @param quiet If TRUE, suppress printing out the current model cost after each(>1) improvement.
+##' @param err See argumetns of \code{\link{mkinfit.full}}
 ##' @param weight See argumetns of \code{\link{mkinfit.full}}
 ##' @param scaleVar See argumetns of \code{\link{mkinfit.full}}
 ##' @param ctr A list of control values for the estimation algorithm to replace the default values including maximum iterations and absolute error tolerance.  Defaults to the output of \code{\link{kingui.control}}.
 ##' @param irls.control A list of control values for the estimation algorithm to replace the default values including the maximum number of iterations for the outer iteration and the error tolerance level for the error variance estimation updating.
 ##' @param update If not NULL, should be a list of starting values obtained from other optimization methods.
 ##' @param useHsolnp Whether to use the hessian matrix derived from the solnp optimization algorithm.
-##' @param ...  Further arguments that will be passed to \code{\link{modFit}}.
+##' @param ... Further arguments that will be passed to \code{\link{modFit}}.
 ##' @return A list with  "kingui", "mkinfit" and "modFit" in the class attribute. A summary can be obtained by \code{\link{summary.kingui}}.
 ##' @author Zhenglei Gao
 ##' @examples
@@ -29,7 +29,7 @@
 ##'  inpartri='default',
 ##'  outpartri='default',
 ##'  data=mkin::schaefer07_complex_case,
-##'  weight=NULL) 
+##'  weight=NULL)
 ##' Fit    <- IRLSkinfit.full(
 ##'            complex,
 ##'               plot      = TRUE,
@@ -402,189 +402,209 @@ IRLSkinfit.full <- function(mkinmodini,
     if(plot) x11()## open a new plotting window
     ## #############################
 
-    method0 <- 'solnp' ## a prefitting step since this is usually the most effective method
-    if(method0=='solnp')
+    optimmethod <- method
+    pnames <- names(c(state.ini.optim, parms.optim))
+    if(method=='solnp')
     {
+      pnames=names(c(state.ini.optim, parms.optim))
+      fn <- function(P){
+        names(P) <- pnames
+        FF<<-cost(P)
+        return(FF$model)}
+      a <- try(fit <- solnp(c(state.ini.optim, parms.optim),fun=fn,LB=lower,UB=upper,control=control),silent=TRUE)
+      flag <- 1
+      #browser()
+      if(class(a) == "try-error")
+      {
+        #print('solnp fails, try hee other algorithm by users choice, might take longer time. Do something else!')
+        warning('solnp fails, switch to  PORT or other algorithm by users choice')
+        fit <- modFit1(cost, c(state.ini.optim, parms.optim), lower = lower, upper = upper, method=submethod,control=kingui.control(method=submethod,tolerance=ctr$control$tol)$control)
+        flag <- 0
+        optimmethod <-c(optimmethod,submethod)
+      }
+
+    }else{### method not solnp
+      ##fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=Hmethod1,control=list())
+      ## browser()
+      fit <- modFit1(cost, c(state.ini.optim, parms.optim), lower = lower, upper = upper, method=method,control=control)
+      flag <- 0
+    }
+
+    if(length(irls.control)==0) irls.control <- list(maxIter=5,tol=1e-05)
+    if(is.null(irls.control$tol)) tol <- 1e-05 else tol <- irls.control$tol
+    if(is.null(irls.control$maxIter)) maxIter <- 5 else  maxIter <- irls.control$maxIter
+
+    ##browser()
+    if(length(mkinmodini$map)==1){
+      ## there is only one parent no need to do the iteration:
+      maxIter <- 0
+      useHsolnp <- TRUE
+      if(flag==1)## fit from solnp
+      {
+        fit$ssr <- fit$values[length(fit$values)]
+        fit$residuals <-FF$residual$res
+        ## mean square per varaible
+        if (class(FF) == "modCost") {
+          names(fit$residuals)  <- FF$residuals$name
+          fit$var_ms            <- FF$var$SSR/FF$var$N
+          fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
+          fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
+
+          names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
+            names(fit$var_ms) <- FF$var$name
+        } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
+      }
+      err1 <- sqrt(fit$var_ms_unweighted)
+      ERR <- err1[as.character(observed$name)]
+      observed$err <-ERR
+    }
+
+    niter <- 1
+
+    ## insure one IRLS iteration setup the initials
+    diffsigma <- 100
+    olderr <- rep(1,length(mod_vars))
+
+    while(diffsigma>tol & niter<=maxIter)
+    {
+      ## # other list need to be attached to fit to give comparable results as in modFit.
+      if(flag==1)## fit from solnp
+      {
+        fit$ssr <- fit$values[length(fit$values)]
+        fit$residuals <-FF$residual$res
+        ## mean square per varaible
+        if (class(FF) == "modCost") {
+          names(fit$residuals)  <- FF$residuals$name
+          fit$var_ms            <- FF$var$SSR/FF$var$N
+          fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
+          fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
+
+          names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
+            names(fit$var_ms) <- FF$var$name
+        } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
+      }
+      err1 <- sqrt(fit$var_ms_unweighted)
+      ERR <- err1[as.character(observed$name)]
+      observed$err <-ERR
+      diffsigma <- sum((err1-olderr)^2)
+      cat("IRLS iteration at",niter, "; Diff in error variance ", diffsigma,"\n")
+      olderr <- err1
+  #################################################
+
+
+
+      if(method=='solnp')
+      {
         pnames=names(c(state.ini.optim, parms.optim))
         fn <- function(P){
-            names(P) <- pnames
-            FF<<-cost(P)
-            return(FF$model)}
+          names(P) <- pnames
+          FF<<-cost(P)
+          return(FF$model)}
         a <- try(fit <- solnp(c(state.ini.optim, parms.optim),fun=fn,LB=lower,UB=upper,control=control),silent=TRUE)
-        #optimmethod <- method0
         flag <- 1
+        #browser()
         if(class(a) == "try-error")
         {
-            print('solnp fails, try PORT or other algorithm by users choice, might take longer time. Do something else!')
-            warning('solnp fails, switch to  PORT or other algorithm by users choice')
-            ## now using submethod already
-            if(method!='solnp') submethod <- method
-            fit <- modFit1(cost, c(state.ini.optim, parms.optim), lower = lower, upper = upper, method=submethod,control=kingui.control(method=submethod,tolerance=ctr$control$tol)$control)
-            flag <- 0 ## change the flag of used methods
-            #optimmethod <- c(optimmethod,method)
-
-        }
-        ###########################
-        if(length(irls.control)==0) irls.control <- list(maxIter=5,tol=1e-05)
-        if(is.null(irls.control$tol)) tol <- 1e-05 else tol <- irls.control$tol
-        if(is.null(irls.control$maxIter)) maxIter <- 5 else  maxIter <- irls.control$maxIter
-
-        ##browser()
-        if(length(mkinmodini$map)==1){
-            ## there is only one parent no need to do the iteration:
-            maxIter <- 0
-            useHsolnp <- TRUE
-            if(flag==1)## fit from solnp
-            {
-                fit$ssr <- fit$values[length(fit$values)]
-                fit$residuals <-FF$residual$res
-                ## mean square per varaible
-                if (class(FF) == "modCost") {
-                    names(fit$residuals)  <- FF$residuals$name
-                    fit$var_ms            <- FF$var$SSR/FF$var$N
-                    fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
-                    fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
-
-                    names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
-                        names(fit$var_ms) <- FF$var$name
-                } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
-            }
-            err1 <- sqrt(fit$var_ms_unweighted)
-            ERR <- err1[as.character(observed$name)]
-            observed$err <-ERR
+          #print('solnp fails, try hee other algorithm by users choice, might take longer time. Do something else!')
+          warning('solnp fails, switch to  PORT or other algorithm by users choice')
+          fit <- modFit1(cost, c(state.ini.optim, parms.optim), lower = lower, upper = upper, method=submethod,control=kingui.control(method=submethod,tolerance=ctr$control$tol)$control)
+          flag <- 0
+          optimmethod <-c(optimmethod,submethod)
         }
 
-        niter <- 1
+      }else{### method not solnp
+        ##fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=Hmethod1,control=list())
+        fit <- modFit1(cost, c(state.ini.optim, parms.optim), lower = lower, upper = upper, method=method,control=control)
+        flag <- 0
+      }
 
-        ## insure one IRLS iteration setup the initials
-        diffsigma <- 100
-        olderr <- rep(1,length(mod_vars))
 
-        while(diffsigma>tol & niter<=maxIter)
-        {
-            ## # other list need to be attached to fit to give comparable results as in modFit.
-            if(flag==1)## fit from solnp
-            {
-                fit$ssr <- fit$values[length(fit$values)]
-                fit$residuals <-FF$residual$res
-                ## mean square per varaible
-                if (class(FF) == "modCost") {
-                    names(fit$residuals)  <- FF$residuals$name
-                    fit$var_ms            <- FF$var$SSR/FF$var$N
-                    fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
-                    fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
 
-                    names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
-                        names(fit$var_ms) <- FF$var$name
-                } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
-            }
-            err1 <- sqrt(fit$var_ms_unweighted)
-            ERR <- err1[as.character(observed$name)]
-            observed$err <-ERR
-            diffsigma <- sum((err1-olderr)^2)
-            cat("IRLS iteration at",niter, "; Diff in error variance ", diffsigma,"\n")
-            olderr <- err1
-            ## #
-            if(goMarq==1) {
 
-                print('do a local optmization using marquardt')
-                fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method='Marq',control=marqctr)
-                flag <- 0
-            }else{
-                flag <- 1
-                ## the next iteration using solnp also
-                a <- try(fit <- solnp(fit$par,fun=fn,LB=lower,UB=upper,control=control),silent=TRUE)
-                if(class(a) == "try-error")
-                {
-                    flag <- 0
-                    print('solnp fails during IRLS iteration, try PORT or other algorithm by users choice.This may takes a while. Do something else!') ## NOTE: because in kingui we switch off the warnings, we need to print out the message instead.
-                    warning('solnp fails during IRLS iteration, switch to  PORT or other algorithm by users choice')
+      niter <- niter+1
 
-                    fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=submethod,control=list())
-                }
-            }
-            niter <- niter+1
-
-            ## # If not converged and not exceeding the iteration limit, reweight and fit
-        }
-        ##browser()
-        ## #########################################
-        ## # other list need to be attached to fit to give comparable results as in modFit.
-        if(flag==1){
-            ## solnp used
-            optimmethod <- 'solnp'
-            fit$ssr <- fit$values[length(fit$values)]
-            fit$residuals <-FF$residual$res
-            ## mean square per varaible
-            if (class(FF) == "modCost") {
-                names(fit$residuals)  <- FF$residuals$name
-                fit$var_ms            <- FF$var$SSR/FF$var$N
-                fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
-                fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
-
-                names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
-                    names(fit$var_ms) <- FF$var$name
-            } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
-            np <- length(c(state.ini.optim, parms.optim))
-            fit$rank <- np
-            fit$df.residual <- length(fit$residuals) - fit$rank
-        }else{
-             optimmethod <- submethod
-        }
-        ## browser()
-        ## ######### Calculating the unscaled covariance ###########
-        if(flag!=1) covar <- try(solve(0.5*fit$hessian), silent = TRUE) else {## solnpused.
-            if(useHsolnp==TRUE) {
-                covar <- try(solve(0.5*fit$hessian), silent = TRUE)
-                if(sum(fit$hessian==diag(np))==np*np) covar <- NULL
-            }else covar <- NULL# unscaled covariance
-            fit$solnp.hessian <- fit$hessian
-        }
-        if(!is.numeric(covar)){
-            message <- "Cannot estimate covariance directly from hessian of the optimization"
-            warning(message)
-            print('Now we need to estimate the Hessian matrix to get the confidence intervals. This may take a while depending on the problem(Please be patient!)')
-            ## here we try to estimate hessian using finite difference, but usually it won't work as well as in the optimization algorithm itself.
-            ## jac <- NULL
-            ## fn1 <- function(P){
-            ##     names(P) <- pnames
-            ##     FF<<-cost(P)
-            ##     return(FF$residuals$res)
-            ## }
-            ## if (! is.null(jac))Jac <- jac(res$par)else Jac <- gradient(fn1, fit$par, centered = TRUE, ...)
-            ## fit$Jac <- Jac
-            ## fit$hessian <- 2 * t(Jac) %*% Jac
-            ## covar <- try(solve(0.5*fit$hessian), silent = TRUE)
-            ## browser()
-            if(!is.numeric(covar)){
-                fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=Hmethod1,control=list())
-                optimmethod <- c(optimmethod,Hmethod1)
-                covar <- fit$covar
-                if(!is.numeric(covar))
-                {
-                    message <- "Cannot estimate covariance  from hessian calculated by gradient or by Hmethod1"
-                    warning(message)
-                    ## print('go to the third level to calculate covar')
-                    fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=Hmethod2,control=list())
-                    covar <- fit$covar
-                    optimmethod <- c(optimmethod,Hmethod2)
-                    if(!is.numeric(fit$covar)){
-                        covar <- fit$covar
-                    }else{
-                        covar <- matrix(data = NA, nrow = np, ncol = np)
-                        warning('covar not estimable')
-                    }
-                }else{
-                    ##
-                }
-            }
-
-        }else{
-            message <- "ok"
-        }
-        rownames(covar) <- colnames(covar) <-pnames
-        fit$covar <- covar
+      ## # If not converged and not exceeding the iteration limit, reweight and fit
     }
+    ##browser()
+    ## #########################################
+    ## # other list need to be attached to fit to give comparable results as in modFit.
+    if(flag==1){
+      ## solnp used
+      optimmethod <- 'solnp'
+      fit$ssr <- fit$values[length(fit$values)]
+      fit$residuals <-FF$residual$res
+      ## mean square per varaible
+      if (class(FF) == "modCost") {
+        names(fit$residuals)  <- FF$residuals$name
+        fit$var_ms            <- FF$var$SSR/FF$var$N
+        fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
+        fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
+
+        names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
+          names(fit$var_ms) <- FF$var$name
+      } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
+      np <- length(c(state.ini.optim, parms.optim))
+      fit$rank <- np
+      fit$df.residual <- length(fit$residuals) - fit$rank
+    }else{
+      optimmethod <- submethod
+    }
+    ## browser()
+    ## ######### Calculating the unscaled covariance ###########
+    if(flag!=1) covar <- try(solve(0.5*fit$hessian), silent = TRUE) else {## solnpused.
+      if(useHsolnp==TRUE) {
+        covar <- try(solve(0.5*fit$hessian), silent = TRUE)
+        if(sum(fit$hessian==diag(np))==np*np) covar <- NULL
+      }else covar <- NULL# unscaled covariance
+      fit$solnp.hessian <- fit$hessian
+    }
+    if(!is.numeric(covar)){
+      message <- "Cannot estimate covariance directly from hessian of the optimization"
+      warning(message)
+      print('Now we need to estimate the Hessian matrix to get the confidence intervals. This may take a while depending on the problem(Please be patient!)')
+      ## here we try to estimate hessian using finite difference, but usually it won't work as well as in the optimization algorithm itself.
+      ## jac <- NULL
+      ## fn1 <- function(P){
+      ##     names(P) <- pnames
+      ##     FF<<-cost(P)
+      ##     return(FF$residuals$res)
+      ## }
+      ## if (! is.null(jac))Jac <- jac(res$par)else Jac <- gradient(fn1, fit$par, centered = TRUE, ...)
+      ## fit$Jac <- Jac
+      ## fit$hessian <- 2 * t(Jac) %*% Jac
+      ## covar <- try(solve(0.5*fit$hessian), silent = TRUE)
+      ## browser()
+     ## if(!is.numeric(covar)){
+      fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=Hmethod1,control=list())
+      optimmethod <- c(optimmethod,Hmethod1)
+      covar <- fit$covar
+      if(!is.numeric(covar))
+      {
+        message <- "Cannot estimate covariance  from hessian calculated by gradient or by Hmethod1"
+        warning(message)
+        ## print('go to the third level to calculate covar')
+        fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=Hmethod2,control=list())
+        covar <- fit$covar
+        optimmethod <- c(optimmethod,Hmethod2)
+        if(is.numeric(fit$covar)){
+          covar <- fit$covar
+        }else{
+          np <- length(c(state.ini.optim, parms.optim))
+          covar <- matrix(data = NA, nrow = np, ncol = np)
+          warning('covar not estimable')
+        }
+      }else{
+        ##
+        message <- "ok"
+      }
+    ##  }
+
+    }else{
+      message <- "ok"
+    }
+    rownames(covar) <- colnames(covar) <-pnames
+    fit$covar <- covar
+    #####################################
 
 
     ## try to use nloptr for optimization did not work as well as the solnp program
@@ -793,11 +813,13 @@ IRLSkinfit.full <- function(mkinmodini,
                 DTmax <- 1000
                 DT50.o <- optimize(f, c(0.0001,DTmax), x=50)$minimum
                 DTmax1 <- log(2)/min(k1,k2)
+                if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
                 DT50.o1 <- optimize(f, c(0, DTmax1), x=50)$minimum
                 DT50.o <- ifelse(f(DT50.o,50)>f(DT50.o1,50), DT50.o1,DT50.o)
                 DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
                 DT90.o <- optimize(f, c(0.001, DTmax), x=90)$minimum
                 DTmax1 <- log(10)/min(k1,k2)
+                if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
                 DT90.o1 <- optimize(f, c(0, DTmax1), x=90)$minimum
                 DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
                 DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
@@ -820,12 +842,14 @@ IRLSkinfit.full <- function(mkinmodini,
                 hso1 <- nlminb(0.0001,f, x=50)
                 hso2 <- nlminb(tb,f, x=50)
                 DT50.o <- ifelse(hso1$objective<=hso2$objective,hso1$par,hso2$par)
-                DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
-
+                ##DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
+                DT50 <- DT50.o
                 hso1 <- nlminb(0.0001,f, x=90)
                 hso2 <- nlminb(tb,f, x=90)
                 DT90.o <- ifelse(hso1$objective<=hso2$objective,hso1$par,hso2$par)
-                DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
+                ## DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
+                DT90 <- DT90.o
+                
                 ## ########### OLD WAY 2
                 ##DT50 <- nlm(f, 0.0001, x=50)$estimate
                 ##DT90 <- nlm(f, 0.0001, x=90)$estimate
@@ -877,7 +901,9 @@ IRLSkinfit.full <- function(mkinmodini,
                     fit$ff[[sub("k_", "", k_out_name)]] = parms.all[[k_out_name]] / k_1output
                 }
             }
-            fit$distimes[obs_var, ] = c(ifelse(is.na(DT50),NA,formatC(DT50,4,format='f')), ifelse(is.na(DT90),NA,formatC(DT90,4,format='f')),type)#c(DT50, DT90,type)
+            ##fit$distimes[obs_var, ] = c(ifelse(is.na(DT50),NA,formatC(DT50,4,format='f')), ifelse(is.na(DT90),NA,formatC(DT90,4,format='f')),type)#c(DT50, DT90,type)
+            fit$distimes[obs_var,1:2] <- c(DT50,DT90)
+            fit$distimes[obs_var,3] <- type
         }
     }
     if(mkinmodini$outpartri=='water-sediment'){
@@ -936,12 +962,14 @@ IRLSkinfit.full <- function(mkinmodini,
                 DT50.o <- optimize(f, c(0, DTmax), x=50)$minimum
                 DT50.o1 <- optimize(f, c(0, DTmax1), x=50)$minimum
                 DT50.o <- ifelse(f(DT50.o,50)>f(DT50.o1,50), DT50.o1,DT50.o)
-                DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
+                ## DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
+                DT50 <- DT50.o
                 DT90.o <- optimize(f, c(0, DTmax), x=90)$minimum
                 DTmax1 <- log(10)/min(k1,k2)
                 DT90.o1 <- optimize(f, c(0, DTmax1), x=90)$minimum
                 DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
-                DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
+                DT90 <- DT90.o
+                ##DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
 
             }
             if (type == "HS") {
@@ -1005,7 +1033,9 @@ IRLSkinfit.full <- function(mkinmodini,
                     fit$ff[[sub("k_", "", k_out_name)]] = parms.all[[k_out_name]] / k_1output
                 }
             }
-            fit$distimes[obs_var, ] = c(ifelse(is.na(DT50),NA,formatC(DT50,4,format='f')), ifelse(is.na(DT90),NA,formatC(DT90,4,format='f')),type)#c(DT50, DT90,type)
+            #fit$distimes[obs_var, ] = c(ifelse(is.na(DT50),NA,formatC(DT50,4,format='f')), ifelse(is.na(DT90),NA,formatC(DT90,4,format='f')),type)#c(DT50, DT90,type)
+            fit$distimes[obs_var,1:2] <- c(DT50,DT90)
+            fit$distimes[obs_var,3] <- type
         }
 
     }
@@ -1045,7 +1075,7 @@ IRLSkinfit.full <- function(mkinmodini,
 ##' @title S3 summary method for class 'kingui'
 ##' @method summary kingui
 ##' @S3method summary kingui
-##' @param object A fitted object of class 'kingui' from the result of 
+##' @param object A fitted object of class 'kingui' from the result of
 ##' \code{\link{mkinfit.full}} or  \code{\link{IRLSkinfit.full}}
 ##' @param data   If TRUE, include in the returned values a data frame containing the observed
 ##' and predicted values with residuals and estimated standard deviations or weights.
@@ -1196,7 +1226,8 @@ myformat <- function(x,digits=4,...)
 ##' @rdname print.summary.kingui
 print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
     cat(paste('Version:',x$version,'\n'))
-    cat('\nR version: 2.12.2 (2011-02-25)\n ')
+    ##cat('\nR version: 2.12.2 (2011-02-25)\n ')
+    cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
     if(x$outpartri=='water-sediment')  cat("\nStudy:Water-Sediment\n")
     ## cat("\nVersion: ")
     ## print(x$version)

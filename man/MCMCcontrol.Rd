@@ -1,0 +1,23 @@
+\name{MCMCcontrol}
+\alias{MCMCcontrol}
+\title{Generate MCMC control parameters}
+\usage{
+  MCMCcontrol(...)
+}
+\arguments{
+  \item{...}{a list that could be in the list of MCMC
+  control parameters}
+}
+\value{
+  a list of control parameters for MCMC evaluation method
+}
+\description{
+  Control parameters for MCMC method
+}
+\details{
+  Details see \code{modMCMC}
+}
+\author{
+  Zhenglei Gao
+}
+

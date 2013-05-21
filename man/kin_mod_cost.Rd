@@ -2,11 +2,11 @@
 \alias{kin_mod_cost}
 \title{Cost of kinetic models}
 \usage{
-  kin_mod_cost(P, inside = FALSE, plot = TRUE, plottitle,
+  kin_mod_cost(P, inside = FALSE, plot = FALSE, plottitle,
     ...)
 }
 \arguments{
-  \item{P}{parameters}
+  \item{P}{a vector parameters}
 
   \item{inside}{logical, whether the function is evaluated
   inside a fit function.}

@@ -2,7 +2,7 @@
 ##' Define the model cost function for kinetic models
 ##'
 ##' @title Cost of kinetic models
-##' @param P a vector parameters
+##' @param P parameters
 ##' @param inside logical, whether the function is evaluated inside a fit function.
 ##' @param plot logical, whether to make a plot
 ##' @param plottitle the title of the plot
@@ -10,7 +10,7 @@
 ##' @return the cost of the model of class modCost
 ##' @author Zhenglei Gao
 ##' @export
-kin_mod_cost <- function(P,inside=FALSE,plot=FALSE,plottitle,...)
+kin_mod_cost <- function(P,inside=FALSE,plot=TRUE,plottitle,...)
 {
   ## names(P) <- pnames
   ## P is the parameter vector with names.

@@ -1,0 +1,32 @@
+\name{trust.exact}
+\alias{trust.exact}
+\title{Exact solution of trust region subproblem}
+\usage{
+  trust.exact(g, H, delta)
+}
+\arguments{
+  \item{g}{gradient}
+
+  \item{H}{Hessian}
+
+  \item{delta}{the trust region radias}
+}
+\value{
+  a list of items describing the solution of the problem
+  \itemize{ \item{"s"}{solution} \item{"val"}{The value of
+  the quadratic at the solution} \item{"def"}{logical, if H
+  is postive definite, 1} \item{"count"}{number of
+  evaluations of the secular equation} \item{"lambda"}{the
+  corresponding Lagrange multiplier} }
+}
+\description{
+  Exact solution of very small dimentioned trust region
+  problems
+}
+\details{
+  It is meant only for small dimentional problems
+}
+\author{
+  Zhenglei Gao
+}
+

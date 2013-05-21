@@ -1,0 +1,26 @@
+\name{atamult}
+\alias{atamult}
+\title{Jacobian matrix multiply function}
+\usage{
+  atamult(A, Y, flag = 0)
+}
+\arguments{
+  \item{A}{a matrix}
+
+  \item{Y}{a vector}
+
+  \item{flag}{indicate with multiply of A and Y}
+}
+\value{
+  either A'*A*Y or A*Y or A'*Y
+}
+\description{
+  Jacobian matrix multiply function
+}
+\details{
+  compute either A'*A*Y or A*Y or A'*Y
+}
+\author{
+  Zhenglei Gao
+}
+

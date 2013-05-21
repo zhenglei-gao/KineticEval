@@ -48,3 +48,13 @@ Collate:
     'kin_mod_cost.r'
     'update_kinmod.r'
     'kin_mod.r'
+    'IRLSkinfit.full.0.r'
+    'kin_mod_nls.r'
+    'KinEval.r'
+    'TRR.r'
+    'Fit_Schaefer.r'
+    'ex1.r'
+    'ex1_a.r'
+    'ex2.r'
+    'versioninfo.r'
+Packaged: 2013-03-17 23:30:48 UTC; z.gao

@@ -1,20 +1,24 @@
 ## Define the model cost function, should be the same for all kinds of optimization ##
-##' Define the model cost function for kinetic models
+##' calculte the predicted/estimated residue values for kinetic models
 ##'
-##' @title kinetic models
-##' @param P parameters
+##' @title predicted residue values using defined kinetic model
+##' @param P a vector of parameters
 ##' @param inside logical, whether the function is evaluated inside a fit function.
 ##' @param plot logical, whether to make a plot
 ##' @param plottitle the title of the plot
-##' @param pnames names of the parameters, nls function will forget them!
+##' @param pnames0 parameter names nls function will forget them!
 ##' @param ... other parameters to be passed into plot
 ##' @return the calculated model values
 ##' @author Zhenglei Gao
 ##' @export
-kin_mod <- function(P,inside=FALSE,plot=TRUE,plottitle,pnames=NULL, ...)
+kin_mod <- function(P,inside=FALSE,plot=TRUE,plottitle,pnames0=NULL, ...)
 {
   ##print(names(P))
-  if(is.null(names(P))) names(P) <- pnames
+  if(length(P)==0) stop("No parameters?")
+  if(is.null(names(P))) {
+   if(exists("pnames")) pnames0 <- pnames
+   names(P) <- pnames0
+  }
   ## names(P) <- pnames
   ## P is the parameter vector with names.
   if(exists('calls')) calls <<- calls+1
@@ -152,9 +156,149 @@ kin_mod <- function(P,inside=FALSE,plot=TRUE,plottitle,pnames=NULL, ...)
   ##              err = 'err', weight = "none", scaleVar = FALSE)
   yMod <- rep(NA,length(observed$value))
   Mod <- mkin_wide_to_long(out_transformed,time="time")
-  names(Mod) <- c("name",  "time", "yMod") 
+  names(Mod) <- c("name",  "time", "yMod")
   all <- merge(observed,Mod,by.x=c("name","time"),sort=FALSE)
   yMod <- all$yMod
+  
+  
+  #############
+  
+  if(missing(plottitle)) plottitle <- NULL
+  ## Report and/or plot if the model is improved
+  if(inside==TRUE){
+    costcurr <- sum(((all$yMod-all$value)/all$err)^2,na.rm=TRUE)
+    if (cost.old-costcurr > ctr$quiet.tol) {
+      if(!quiet) cat("Model cost at call ", calls, ": ", costcurr, "\n")
+      
+      ## Plot the data and current model output if requested
+      if(plot) {
+        outtimes_plot = seq(min(observed$time), max(observed$time), length.out=100)
+        if (solution == "analytical") {
+          o_plot <- switch(parent.type,
+                           SFO = SFO.solution(outtimes_plot,
+                                              evalparse(parent.name),
+                                              evalparse(paste("k", parent.name,  sep="_"))),
+                           FOMC = FOMC.solution(outtimes_plot,
+                                                evalparse(parent.name),
+                                                evalparse(paste("alpha", parent.name,  sep="_")),evalparse(paste("beta", parent.name,  sep="_"))),
+                           DFOP = DFOP.solution(outtimes_plot,
+                                                evalparse(parent.name),
+                                                evalparse(paste("k1", parent.name,  sep="_")),evalparse(paste("k2", parent.name,  sep="_")),evalparse(paste("g", parent.name,  sep="_"))),
+                           HS = HS.solution(outtimes_plot,
+                                            evalparse(parent.name),
+                                            evalparse(paste("k1", parent.name,  sep="_")),evalparse(paste("k2", parent.name,  sep="_")),evalparse(paste("tb", parent.name,  sep="_"))),
+                           SFORB = SFORB.solution(outtimes_plot,
+                                                  evalparse(parent.name),
+                                                  evalparse(paste("k", parent.name, "bound", sep="_")),
+                                                  evalparse(paste("k", sub("free", "bound", parent.name), "free", sep="_")),
+                                                  evalparse(paste("k", parent.name, "sink", sep="_")))
+          )
+          out_plot <- cbind(outtimes_plot, o_plot)
+          dimnames(out_plot) <- list(outtimes_plot, c("time", sub("_free", "", parent.name)))
+        }
+        if(solution == "eigen") {
+          o_plot <- matrix(mapply(f.out, outtimes_plot),
+                           nrow = length(mod_vars), ncol = length(outtimes_plot))
+          dimnames(o_plot) <- list(mod_vars, outtimes_plot)
+          out_plot <- cbind(time = outtimes_plot, t(o_plot))
+        }
+        if (solution == "deSolve") {
+          out_plot <- ode(
+            y = odeini,
+            times = outtimes_plot,
+            func = mkindiff,
+            parms = odeparms)
+        }
+        out_transformed_plot <- data.frame(time = out_plot[,"time"])
+        for (var in names(mkinmodini$map)) {
+          if((length(mkinmodini$map[[var]]) == 1) || solution == "analytical") {
+            out_transformed_plot[var] <- out_plot[, var]
+          } else {
+            out_transformed_plot[var] <- rowSums(out_plot[, mkinmodini$map[[var]]])
+          }
+        }
+        
+        plot(0, type="n",
+             xlim = range(observed$time), ylim = range(observed$value, na.rm=TRUE),
+             xlab = "Time", ylab = "Observed",main=plottitle)
+        col_obs <- pch_obs <- 1:length(obs_vars)
+        names(col_obs) <- names(pch_obs) <- obs_vars
+        for (obs_var in obs_vars) {
+          points(subset(observed, name == obs_var, c(time, value)),
+                 pch = pch_obs[obs_var], col = col_obs[obs_var])
+        }
+        matlines(out_transformed_plot$time, out_transformed_plot[-1])
+        legend("topright", inset=c(0.05, 0.05), legend=obs_vars,
+               col=col_obs, pch=pch_obs, lty=1:length(pch_obs))
+      }
+      
+      assign("cost.old", costcurr, inherits=TRUE)
+    }
+  }else{
+    ## Plot the data and current model output if requested
+    if(plot) {
+      outtimes_plot = seq(min(observed$time), max(observed$time), length.out=100)
+      if (solution == "analytical") {
+        o_plot <- switch(parent.type,
+                         SFO = SFO.solution(outtimes_plot,
+                                            evalparse(parent.name),
+                                            evalparse(paste("k", parent.name,  sep="_"))),
+                         FOMC = FOMC.solution(outtimes_plot,
+                                              evalparse(parent.name),
+                                              evalparse(paste("alpha", parent.name,  sep="_")),evalparse(paste("beta", parent.name,  sep="_"))),
+                         DFOP = DFOP.solution(outtimes_plot,
+                                              evalparse(parent.name),
+                                              evalparse(paste("k1", parent.name,  sep="_")),evalparse(paste("k2", parent.name,  sep="_")),evalparse(paste("g", parent.name,  sep="_"))),
+                         HS = HS.solution(outtimes_plot,
+                                          evalparse(parent.name),
+                                          evalparse(paste("k1", parent.name,  sep="_")),evalparse(paste("k2", parent.name,  sep="_")),evalparse(paste("tb", parent.name,  sep="_"))),
+                         SFORB = SFORB.solution(outtimes_plot,
+                                                evalparse(parent.name),
+                                                evalparse(paste("k", parent.name, "bound", sep="_")),
+                                                evalparse(paste("k", sub("free", "bound", parent.name), "free", sep="_")),
+                                                evalparse(paste("k", parent.name, "sink", sep="_")))
+        )
+        out_plot <- cbind(outtimes_plot, o_plot)
+        dimnames(out_plot) <- list(outtimes_plot, c("time", sub("_free", "", parent.name)))
+      }
+      if(solution == "eigen") {
+        o_plot <- matrix(mapply(f.out, outtimes_plot),
+                         nrow = length(mod_vars), ncol = length(outtimes_plot))
+        dimnames(o_plot) <- list(mod_vars, outtimes_plot)
+        out_plot <- cbind(time = outtimes_plot, t(o_plot))
+      }
+      if (solution == "deSolve") {
+        out_plot <- ode(
+          y = odeini,
+          times = outtimes_plot,
+          func = mkindiff,
+          parms = odeparms)
+      }
+      out_transformed_plot <- data.frame(time = out_plot[,"time"])
+      for (var in names(mkinmodini$map)) {
+        if((length(mkinmodini$map[[var]]) == 1) || solution == "analytical") {
+          out_transformed_plot[var] <- out_plot[, var]
+        } else {
+          out_transformed_plot[var] <- rowSums(out_plot[, mkinmodini$map[[var]]])
+        }
+      }
+      
+      plot(0, type="n",
+           xlim = range(observed$time), ylim = range(observed$value, na.rm=TRUE),
+           xlab = "Time", ylab = "Observed",main=plottitle)
+      col_obs <- pch_obs <- 1:length(obs_vars)
+      names(col_obs) <- names(pch_obs) <- obs_vars
+      for (obs_var in obs_vars) {
+        points(subset(observed, name == obs_var, c(time, value)),
+               pch = pch_obs[obs_var], col = col_obs[obs_var])
+      }
+      matlines(out_transformed_plot$time, out_transformed_plot[-1])
+      legend("topright", inset=c(0.05, 0.05), legend=obs_vars,
+             col=col_obs, pch=pch_obs, lty=1:length(pch_obs))
+    }
+    
+  }
+  
   return(yMod)
-
+  
 }

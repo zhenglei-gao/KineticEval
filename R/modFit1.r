@@ -8,7 +8,7 @@ overrule <- function(ini, new) if(is.null(new)) ini else new
 
 modFit1 <- function(f, p, ..., lower = -Inf, upper = Inf,
                    method = c("Marq", "Port", "Newton", "Nelder-Mead", "BFGS", "CG",
-                   "L-BFGS-B", "SANN", "Pseudo",'trust','spg','ucminf','nmk','Rcgmin','Rvmmin','deoptim'), jac = NULL,
+                   "L-BFGS-B", "SANN", "Pseudo",'trust','spg','ucminf','nmk','Rcgmin','Rvmmin','deoptim',"LM"), jac = NULL,
                    control = list(), hessian = TRUE) {
 
   ## check if valid input...
@@ -28,10 +28,10 @@ modFit1 <- function(f, p, ..., lower = -Inf, upper = Inf,
 
 
   ## are boundaries allowed in the method?
-  bounds <- method %in% c("L-BFGS-B", "Port", "Pseudo",'trust','spg')
+  bounds <- method %in% c("L-BFGS-B", "Port", "Pseudo",'trust','spg',"LM")
 
   FF      <- NULL
-  useCost <- method != "Marq" # marquardt uses residuals, others model cost
+  useCost <- (method != "Marq") & (method != "LM")# marquardt uses residuals, others model cost
   if(method=='trust2') useCost <- 0
 
   Func <- function(p, ...) {
@@ -140,6 +140,34 @@ modFit1 <- function(f, p, ..., lower = -Inf, upper = Inf,
         warning('parameter values reach the boundary')
     }
     res <- as.list(nls.lm(par = Pars, fn = Fun, control = Contr, ...)[])
+    # renaming results for compatibility with other methods
+    names(res)[7] <- "iterations"  # called "niter" here
+    names(res)[9] <- "ssr"         # called "deviance" here
+    names(res)[3] <- "residuals"
+    res$hessian   <- 2*res$hessian # returns 0.5*hessian!
+    Diag          <- unlist(res[6])
+    res$diag      <- NULL
+    res$diag      <- Diag
+    #browser()
+  }
+  
+  else if (method == "LM") {
+    Contr <- nls.lm.control()
+    nmsC <- names(Contr)
+    if (! "maxiter" %in% names(control))
+      control$maxiter <- 100       # override too low default  (50)
+    Contr[(namc <- names(control))] <- control
+    if (length(noNms <- namc[!namc %in% nmsC]) > 0)
+      warning("unknown names in control: ", paste(noNms, collapse = ", "))
+    if(any(Pars<lower)){
+      Pars[Pars<lower] <- lower[Pars<lower]
+      warning('below lower bound in the parameter values')
+    }
+    if(any(Pars> upper)){
+      Pars[Pars>upper]<-upper[Pars>upper]
+      warning('parameter values reach the boundary')
+    }
+    res <- as.list(nls.lm(par = Pars, lower=lower,upper=upper, fn = Fun, control = Contr, ...)[])
     # renaming results for compatibility with other methods
     names(res)[7] <- "iterations"  # called "niter" here
     names(res)[9] <- "ssr"         # called "deviance" here

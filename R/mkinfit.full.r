@@ -688,6 +688,7 @@ mkinfit.full <- function(mkinmodini,
                  ##browser()
                  ## shouldn't have a greater than slow phase DT50, need to double check
                  DTmax1 <- log(2)/min(k1,k2)
+                 if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
                  DTmax <- 1000
                  DT50.o <- optimize(f, c(0, DTmax), x=50)$minimum
                  DT50.o1 <- optimize(f, c(0, DTmax1), x=50)$minimum
@@ -695,6 +696,7 @@ mkinfit.full <- function(mkinmodini,
                  DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
                  DT90.o <- optimize(f, c(0, DTmax), x=90)$minimum
                  DTmax1 <- log(10)/min(k1,k2)
+                 if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
                  DT90.o1 <- optimize(f, c(0, DTmax1), x=90)$minimum
                  DT90.o <- ifelse(f(DT90.o,50)>f(DT90.o1,50), DT90.o1,DT90.o)
                  DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)

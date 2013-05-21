@@ -1,0 +1,26 @@
+\name{trrcontrol}
+\alias{trrcontrol}
+\title{Change the control parameters of the STIR algorithm}
+\usage{
+  trrcontrol(npar = 1, user = NULL, ...)
+}
+\arguments{
+  \item{npar}{number of parameters}
+
+  \item{user}{user defined control parameters list}
+
+  \item{...}{control parameters that should be modified}
+}
+\value{
+  a list of control parameters
+}
+\description{
+  Change the control parameters of the STIR algorithm
+}
+\details{
+  Change the control parameters of the STIR algorithm
+}
+\author{
+  Zhenglei Gao
+}
+

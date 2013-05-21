@@ -1,0 +1,26 @@
+\name{quad1d}
+\alias{quad1d}
+\title{quadratic zero finder for 1D}
+\usage{
+  quad1d(x, ss, delta)
+}
+\arguments{
+  \item{x}{a vector}
+
+  \item{ss}{a vector}
+
+  \item{delta}{a number}
+}
+\value{
+  a list of new x value and the tau(min(1, step to zero))
+}
+\description{
+  1-d quadratic zero finder for trust region step
+}
+\details{
+  1-d quadratic of the form ay^2+by+c
+}
+\author{
+  Zhenglei Gao
+}
+

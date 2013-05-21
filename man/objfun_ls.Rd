@@ -1,0 +1,44 @@
+\name{objfun_ls}
+\alias{objfun_ls}
+\title{derive the objective function}
+\usage{
+  objfun_ls(modelfun, par, obs, Q = FALSE, pnames = NULL,
+    ...)
+}
+\arguments{
+  \item{modelfun}{model function}
+
+  \item{par}{parameter values}
+
+  \item{obs}{observed values}
+
+  \item{Q}{whether to calculate the hessian matrix}
+
+  \item{pnames}{parameter names}
+
+  \item{...}{other parameters to be passed into modelfun}
+}
+\description{
+  Derive the objective function including the gradient and
+  heissian
+}
+\details{
+  using the numDeriv functions jacobian and genD
+}
+\examples{
+\dontrun{
+farb<- function(x=c(3,1),t=1:10,...){
+  x1 <- x[1]
+  x2 <- x[2]
+  x[1]+x[2]*t
+  }
+  y <- farb(x=c(3,1),t=1:10)+rnorm(10,0,2)
+  t <- 1:10
+  x <- c(3,1)
+  objfun <- objfun_ls(farb,c(3,1),obs=y)
+  }
+}
+\author{
+  Zhenglei Gao
+}
+

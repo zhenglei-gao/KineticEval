@@ -1,0 +1,30 @@
+\name{definv}
+\alias{definv}
+\title{Scaling vector and derivative}
+\usage{
+  definv(g, x, l, u)
+}
+\arguments{
+  \item{g}{gradient}
+
+  \item{x}{current point}
+
+  \item{l}{lower bounds}
+
+  \item{u}{upper bounds}
+}
+\value{
+  a list \itemize{ \item{"v"}{scaling vector}
+  \item{"dv"}{derivative} }
+}
+\description{
+  Scaling vector and derivative
+}
+\details{
+  calculate distance to the bounds according to the sign of
+  gradient.
+}
+\author{
+  Zhenglei Gao
+}
+

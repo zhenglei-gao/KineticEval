@@ -1,0 +1,27 @@
+\name{preproj}
+\alias{preproj}
+\title{Apply preconditioner to vector r}
+\usage{
+  preproj(r, RPCMTX = NULL, ppvec = NULL)
+}
+\arguments{
+  \item{r}{a vector}
+
+  \item{RPCMTX}{the preconditioner}
+
+  \item{ppvec}{the permutation vector}
+}
+\value{
+  a preconditioned w
+}
+\description{
+  Apply preconditioner to vector r
+}
+\details{
+  The conceptual preconditioner is H(ppvec,ppvec) =
+  RPCMTX'*RPCMTX
+}
+\author{
+  Zhenglei Gao
+}
+

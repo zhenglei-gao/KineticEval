@@ -1,0 +1,108 @@
+\name{KinEval}
+\alias{KinEval}
+\title{Fit a kinetic model using the IRLS algorithm.}
+\usage{
+  KinEval(mkinmodini,
+    evalMethod = c("NLS", "IRLS", "MCMC", "directMLE"),
+    optimMethod = c("LM", "TRR", "port", "nls2", "Nash", "Marq", "Port", "Newton", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Pseudo", "trust", "spg", "ucminf", "nmk", "Rcgmin", "Rvmmin", "deoptim", "solnp"),
+    eigen = FALSE, plotfit = TRUE, plotRes = FALSE,
+    plottitle = "", quiet = FALSE, ctr = kingui.control(),
+    irls.control = list(), MCMCoptions = MCMCcontrol(),
+    update = NULL, useHsolnp = FALSE, ...)
+}
+\arguments{
+  \item{mkinmodini}{A list of class
+  \code{\link{mkinmod.full}}, containing the kinetic model
+  to be fitted to the data, and the initial parameter
+  values, the observed data.}
+
+  \item{evalMethod}{Choice of evaluation method, NLS, IRLS,
+  MCMC, directMLE(not implemented)}
+
+  \item{optimMethod}{Choise of optimization algorithm, the
+  user should choose from LM and TRR.}
+
+  \item{eigen}{If TRUE, the solution of the system of
+  differential equation should be based on the spectral
+  decomposition of the coefficient matrix in cases that
+  this is possible.}
+
+  \item{plotfit}{If TRUE,the observed values and the
+  numerical solutions should be plotted at each stage of
+  the optimisation.}
+
+  \item{plotRes}{If TRUE,the observed values and the
+  numerical solutions should be plotted only at the end of
+  the optimisation.}
+
+  \item{plottitle}{The title of the plot for visualizing
+  the optimization process.}
+
+  \item{quiet}{If TRUE, suppress printing out the current
+  model cost after each(>1) improvement.}
+
+  \item{ctr}{A list of control values for the estimation
+  algorithm to replace the default values including maximum
+  iterations and absolute error tolerance.  Defaults to the
+  output of \code{\link{kingui.control}}.}
+
+  \item{irls.control}{A list of control values for the
+  estimation algorithm to replace the default values
+  including the maximum number of iterations for the outer
+  iteration and the error tolerance level for the error
+  variance estimation updating.}
+
+  \item{MCMCoptions}{control parameters for MCMC evaluation
+  method}
+
+  \item{update}{If not NULL, should be a list of starting
+  values obtained from other optimization methods.}
+
+  \item{useHsolnp}{Whether to use the hessian matrix
+  derived from the solnp optimization algorithm.}
+
+  \item{...}{Further arguments that will be passed to
+  \code{\link{kin_mod}} or \code{IRLSkinfit.full}.}
+}
+\value{
+  A list with "kingui" in the class attribute. A summary
+  can be obtained by \code{\link{summary.kingui}}.
+}
+\description{
+  Fit a kinetic model using the NLS, IRLS and MCMC methods.
+}
+\details{
+  Instead of implicitly assuming equal error variances or
+  giving arbitrary weights decided by the researcher as in
+  the NLS algorithm, an iteratively reweighted least
+  squares (IRLS) algorithm was implemented to obtain the
+  maximum likelihood estimates of the kinetic model
+  parameters.
+}
+\examples{
+complex <- mkinmod.full(
+ parent = list(type = "SFO", to = c("A1", "B1", "C1"), sink = FALSE),
+ A1 = list(type = "SFO", to = "A2"),
+ B1 = list(type = "SFO"),
+ C1 = list(type = "SFO"),
+ A2 = list(type = "SFO"),
+ inpartri='default',
+ outpartri='default',
+ data=schaefer07_complex_case,
+ weight=NULL)
+Fit    <- KinEval(
+           complex,
+           evalMethod="IRLS",
+           optimMethod="LM",
+              plotfit      = TRUE,
+              quiet     = TRUE,
+              ctr       = kingui.control(),
+           irls.control = list(
+                             maxIter = 10,
+                           tolerance = 0.001))
+}
+\author{
+  Zhenglei Gao
+}
+\keyword{Kinetic-Evaluations}
+

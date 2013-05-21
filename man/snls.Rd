@@ -1,0 +1,43 @@
+\name{snls}
+\alias{snls}
+\title{solve box constrained nonlinear least squares problem.}
+\usage{
+  snls(funfcn, xstart, l, u, verb = FALSE, options, fval,
+    JACval, computeLambda, mtxmpy, ...)
+}
+\arguments{
+  \item{funfcn}{function returning residuals}
+
+  \item{xstart}{starting value}
+
+  \item{l}{lower bounds}
+
+  \item{u}{upper bounds}
+
+  \item{verb}{logical, verbose}
+
+  \item{options}{control parameters for STIR optimization}
+
+  \item{fval}{current fvalue}
+
+  \item{JACval}{Jacobian value}
+
+  \item{computeLambda}{}
+
+  \item{mtxmpy}{Jacobian matrix multiply function}
+
+  \item{...}{other input arguments for funfcn}
+}
+\value{
+  a list
+}
+\description{
+  solve box constrained nonlinear least squares problem.
+}
+\details{
+  See sparse nonlinear ls solver
+}
+\author{
+  Zhenglei Gao
+}
+

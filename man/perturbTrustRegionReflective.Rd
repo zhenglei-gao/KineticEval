@@ -1,0 +1,36 @@
+\name{perturbTrustRegionReflective}
+\alias{perturbTrustRegionReflective}
+\title{Perturb point from bounds}
+\usage{
+  perturbTrustRegionReflective(x, l, u,
+    del = 100 * .Machine$double.eps, y = NULL,
+    sigma = NULL)
+}
+\arguments{
+  \item{x}{current point}
+
+  \item{l}{lower bounds}
+
+  \item{u}{upper bounds}
+
+  \item{del}{a small value away from bounds}
+
+  \item{y}{is the reflected point y}
+
+  \item{sigma}{perterb y w.r.t sigma}
+}
+\value{
+  perturbed x(and y)
+}
+\description{
+  shake the current point slight away from bounds
+}
+\details{
+  perturbs the current point X slightly to shake it loose
+  from tight (less than DEL away) bounds U and L to be
+  strictly feasible.
+}
+\author{
+  Zhenglei Gao
+}
+

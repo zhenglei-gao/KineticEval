@@ -1,0 +1,40 @@
+\name{aprecon}
+\alias{aprecon}
+\title{Banded preconditioner for LS problems}
+\usage{
+  aprecon(A = NULL, upperbandw = NULL, DM, DG, ...)
+}
+\arguments{
+  \item{A}{a rectangular matrix with more rows than
+  columns}
+
+  \item{upperbandw}{upper bandwidth}
+
+  \item{DM}{a positive diagonal matrix}
+
+  \item{DG}{a non negative diagonal matrix}
+
+  \item{...}{other parameters.}
+}
+\value{
+  a list with RPCMTX an upper triangular matrix such that
+  RPCMTX'RPCMTX is a preconditioner matrix for
+  M=DM*A*A'*DM+DG, and ppvec being permutation vector.
+}
+\description{
+  Banded preconditioner function for least-squares
+  problems.
+}
+\details{
+  produces the sparse nonsingular upper triangular matrix
+  RPCMTX such that RPCMTX'*RPCMTX is a preconditioner for
+  the matrix M = DM*(A'*A)*DM + DG, where DM is a positive
+  diagonal matrix, DG is a non-negative diagonal matrix,
+  and A is sparse rectangular matrix with more rows than
+  columns. PPVEC is the associated permutation (row) vector
+  and UPPERBW specifies the upperbandwidth of RPCMTX.
+}
+\author{
+  Zhenglei Gao
+}
+
