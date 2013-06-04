@@ -1,3 +1,10 @@
+##' Function to write a list into a file.
+##'
+##' @title Write the results
+##' @param x a list.
+##' @param file file name
+##' @return NULL
+##' @export
 list2ascii <- function(x,file=paste(deparse(substitute(x)),".txt",sep="")) {
    # From the 'crosshybDetector' package from Paolo Uva <paolo.uva@gmail.com>
    # MHP July 7, 2004

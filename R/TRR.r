@@ -983,6 +983,7 @@ preproj <- function(r,RPCMTX=NULL,ppvec=NULL)
 ##' @param ... other parameters to be passed into func
 ##' @return the Jacobian of the function at x
 ##' @author Zhenglei Gao
+##' @export
 fdjacobian <- function(func,x,method="Richardson",method.args=list(eps=sqrt(.Machine$double.eps)),fval=NULL,lb=-Inf,ub=Inf,...)
 {
   ## modified according to numDeriv::jacobian

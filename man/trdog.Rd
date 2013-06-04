@@ -18,7 +18,7 @@
 
   \item{delta}{trust region}
 
-  \item{dv}{}
+  \item{dv}{a vector}
 
   \item{mtxmpy}{Jacobian-matrix multiply function}
 
@@ -30,7 +30,7 @@
 
   \item{kmax}{max k}
 
-  \item{theta}{}
+  \item{theta}{default 0.95}
 
   \item{l}{lower bound}
 

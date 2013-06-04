@@ -22,7 +22,7 @@
 
   \item{JACval}{Jacobian value}
 
-  \item{computeLambda}{}
+  \item{computeLambda}{logical, whether to compute Lambda}
 
   \item{mtxmpy}{Jacobian matrix multiply function}
 

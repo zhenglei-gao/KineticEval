@@ -2,7 +2,7 @@
 #' @title BCS2
 #' @description This data set contains one parent and 5 metabolites.
 #' @docType data
-#' @usage BCS2
+#' @usage BCS1
 #' @format one parent and 5 metabolites, 6 column of residuals.
 #' @source BcS
 #' @author 2012-03-05

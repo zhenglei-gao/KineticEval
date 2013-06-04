@@ -1,0 +1,21 @@
+version	bugs and features	fixed
+1.2013.0508.1519	New Release	TRUE
+1.2013.0411.1519	DFOP DT50 with k2=0	TRUE
+1.2013.0301.1519	SINK FALSE set k fixed at 0	TRUE
+1.2012.1127.1432	DFOPmetabolites	TRUE
+1.2012.1116.1400	crash after last fix	TRUE
+1.2012.1113.1400	ff to sink negative	TRUE
+1.2012.0426.1445	ecotoxfish M0 fix	TRUE
+1.2012.0206.1445	HS nlm problem-nlminb	TRUE
+1.2012.0203.1445	GLP validation	TRUE
+1.2012.0131.1200	DT90 calculation	TRUE
+1.2012.0109.1200	chi2 error	TRUE
+1.2011.1122.1607	NA for parent pars	TRUE
+1.2011.1117.1330	missing R2 problems	TRUE
+1.2011.1111.1630	DFOP DT50 problems	TRUE
+1.2011.1108.1630	weight 0 problems	TRUE
+1.2011.1101.1630	weight 0 problems	TRUE
+1.2011.1005.1430	fixed parameter problems	TRUE
+1.2011.930.1430	HS not calculating endpoints	TRUE
+1.2011.922.1530	water-sediment	TRUE
+1.2011.811.1530	negative ff to sink	TRUE

@@ -42,7 +42,7 @@
 ##' @keywords Kinetic-Evaluations
 ##' @export
 KinEval <- function(mkinmodini,
-                    evalMethod=c('NLS','IRLS','MCMC','directMLE'),
+                    evalMethod=c('NLLS','IRLS','MCMC','directMLE'),
                     optimMethod=c("LM","TRR","port","nls2","Nash","Marq", "Port", "Newton", "Nelder-Mead", "BFGS",
 					"CG","L-BFGS-B", "SANN", "Pseudo",'trust',
 					'spg','ucminf','nmk','Rcgmin','Rvmmin','deoptim','solnp'),
@@ -147,7 +147,7 @@ KinEval <- function(mkinmodini,
   runIRLS <- TRUE ## determin whther to run an IRLS step especially before the MCMC step
   ## if the parameter values are provided to the MCMC, then do not run
   if(evalMethod == 'MCMC' & (!is.null(update))) runIRLS <- FALSE
-  if(evalMethod == "NLS") runIRLS <- FALSE
+  if(evalMethod == "NLLS") runIRLS <- FALSE
   # ----------------------------------------
   # options(warn=-1) ## turn off the warning
   # ----------------------------------------
@@ -164,13 +164,13 @@ KinEval <- function(mkinmodini,
                         "CG","L-BFGS-B", "SANN", "Pseudo",'trust',
                         'spg','ucminf','nmk','Rcgmin','Rvmmin','deoptim','solnp')){
     ## Use the old IRLSkinfit, mkinfit, mcmckinfit
-    if(evalMehtod=="NLS"){
+    if(evalMethod=="NLLS"){
       fit <- mkinfit.full(mkinmodini,
                           eigen = eigen,
                           plot = plotfit, plottitle=plottitle,quiet = quiet,
                           err = NULL, weight = "none", scaleVar = FALSE, ctr=ctr, ...)
     }else{
-      if(evalMehtod=="IRLS"){
+      if(evalMethod=="IRLS"){
         fit <- IRLSkinfit.full(mkinmodini,
                                eigen = eigen,
                                plot = plotfit, plottitle=plottitle,quiet = quiet,
@@ -179,7 +179,8 @@ KinEval <- function(mkinmodini,
                                update=update,useHsolnp=FALSE,...)  
       }else{
         attach(MCMCoptions)
-        fit <- mcmckinfit.full()
+        #fit <- mcmckinfit.full()
+		stop("Please use either LM or TRR as the optimMethod for MCMC evalMethod")
       }
     }
 
@@ -303,11 +304,16 @@ KinEval <- function(mkinmodini,
     ##browser()
     res0$covar <-  try(solve(0.5*res0$hessian), silent = TRUE)
     if(!is.numeric(res0$covar)){
-      print("Not able to estimate the covariance matrix due to non-positive definite hessian")
-      res0$covar <- matrix(data = NA, nrow = np, ncol = np)
+      ## try once again!
+      if(evalMethod=="NLLS") res0$covar <- calcCovar(res0$par,f=f,fval=res0$residuals,lb=lower,ub=upper,...)
+      if(evalMethod=="IRLS") res0$covar <- calcCovar(res0$par,f=f1,fval=res0$residuals,lb=lower,ub=upper,...)
+      if(!is.numeric(res0$covar)){
+        print("Not able to estimate the covariance matrix due to non-positive definite hessian")
+        res0$covar <- matrix(data = NA, nrow = np, ncol = np)
       ###### Calculate Hessian!!!  TODO???????????
       ## V= GCHOL(H-),  V'V
       ############################
+      }
     }
     npar <- length(res0$par)
     nobs <- length(res0$fvec)
@@ -822,6 +828,28 @@ MCMCcontrol <- function(...){
                   ntrydr = 1, drscale = NULL, verbose = TRUE)
   spec <- list(...)
   for(nam in names(spec))
-    default$nam <- spec$nam
+    default[[nam]] <- spec[[nam]]
   return(default)
+}
+
+
+##################
+##' Calculating Covariance when LM returns non-positive definite Hessian
+##'
+##' Details
+##' @title Estimate Covariance Matrix with Boundaries
+##' @param par parameter vector
+##' @param f the residual function
+##' @param fval current value
+##' @param lb lower bounds
+##' @param ub upper bounds
+##' @return a covariance matrix
+##' @author Zhenglei Gao
+##' @export
+calcCovar <- function(par,f,fval,lb,ub,...){
+  ## like in lsqnonlin function, they calculated the Jacobian with boundary adjustment.
+  JACOB <- fdjacobian(func=f,par,fval=fval,lb=lb,ub=ub,...)
+  hessian <- t(JACOB)%*%(JACOB)
+  covar <-  try(solve(hessian), silent = TRUE)
+  return(covar)
 }

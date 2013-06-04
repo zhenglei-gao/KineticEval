@@ -1,60 +1,22 @@
 Package: KineticEval
 Type: Package
-Title: Kinetic Evaluations by NLS, IRLS and MCMC
-Version: 1.0
+Title: Kinetic Evaluations by NLLS, IRLS and MCMC
+Version: 1.0-2
 Date: 2012-03-14
-Author: Zhenglei Gao
+Author: Zhenglei Gao, Horatio Meyer and Walter Schmitt
 Maintainer: Zhenglei Gao <zhenglei.gao@bayer.com>
 Description: More about what it does (maybe more than one line)
-Depends:
-    R (>= 2.12),
-    mkin
-Imports:
-    FME,
-    Rsolnp,
-    optimx,
-    BB,
-    minqa,
-    deSolve,
-    coda,
-    minpack.lm
-Suggests:
-    MASS,
-    ucminf,
-    Rcgmin,
-    Rvmmin,
-    setRNG
+Depends: R (>= 2.12), mkin
+Imports: FME, Rsolnp, optimx, BB, minqa, deSolve, coda, minpack.lm
+Suggests: MASS, ucminf, Rcgmin, Rvmmin, setRNG
 License: GPL (>= 2)
-Collate:
-    'kingraph.r'
-    'kingui.control.r'
-    'kinplot.r'
-    'mcmckinfit.full.r'
-    'mkinmod.full.r'
-    'FOCUS2006A.r'
-    'FOCUS2006B.r'
-    'FOCUS2006C.r'
-    'FOCUS2006D.r'
-    'KineticEval-package.r'
-    'list2ascii.r'
-    'modCost.r'
-    'modFit1.r'
-    'IRLSkinfit.full.r'
-    'mkinfit.full.r'
-    'BCS1.r'
-    'BCS2.r'
-    'andrew.r'
-    'compare_multi_kinmod.r'
-    'kin_mod_cost.r'
-    'update_kinmod.r'
-    'kin_mod.r'
-    'IRLSkinfit.full.0.r'
-    'kin_mod_nls.r'
-    'KinEval.r'
-    'TRR.r'
-    'Fit_Schaefer.r'
-    'ex1.r'
-    'ex1_a.r'
-    'ex2.r'
-    'versioninfo.r'
-Packaged: 2013-03-17 23:30:48 UTC; z.gao
+Collate: 'kingraph.r' 'kingui.control.r' 'kinplot.r'
+        'mcmckinfit.full.r' 'mkinmod.full.r' 'FOCUS2006A.r'
+        'FOCUS2006B.r' 'FOCUS2006C.r' 'FOCUS2006D.r'
+        'KineticEval-package.r' 'list2ascii.r' 'modCost.r' 'modFit1.r'
+        'IRLSkinfit.full.r' 'mkinfit.full.r' 'BCS1.r' 'BCS2.r'
+        'andrew.r' 'compare_multi_kinmod.r' 'kin_mod_cost.r'
+        'update_kinmod.r' 'kin_mod.r' 'IRLSkinfit.full.0.r'
+        'kin_mod_nls.r' 'KinEval.r' 'TRR.r' 'Fit_Schaefer.r' 'ex1.r'
+        'ex1_a.r' 'ex2.r' 'versioninfo.r'
+Packaged: 2013-06-03 09:46:34 UTC; gbbfx
