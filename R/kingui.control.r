@@ -48,7 +48,10 @@
 ##' kingui.control()
 ##'
 ##' @export
-kingui.control <- function (method='LM',maxIter=100,tolerance=1e-8,odesolver='lsoda',atol=1e-9,rtol=1e-10,rhobeg=0.05,iprint=1,trace=0,goMarq=0,delta=1e-6,rho=1,submethod='Port',Hmethod1='LM',Hmethod2='L-BFGS-B',quiet.tol=1,...)
+kingui.control <- function (method='LM',maxIter=100,tolerance=1e-8,odesolver='lsoda',atol=1e-9,
+                            rtol=1e-10,rhobeg=0.05,iprint=1,trace=0,goMarq=0,delta=1e-6,rho=1,
+                            submethod='Port',Hmethod1='LM',Hmethod2='L-BFGS-B',quiet.tol=1,
+                            runTRR=TRUE,...)
 {
 
     marqctr <- list(maxiter=maxIter,ftol=tolerance,ptol=tolerance,...)
@@ -57,37 +60,39 @@ kingui.control <- function (method='LM',maxIter=100,tolerance=1e-8,odesolver='ls
         if(method=='L-BFGS-B')
             {
                 factr <- tolerance*1e+15
-                return(list(method=method,control=list(maxit=maxIter,factr=factr,trace=trace,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol))
+                return(list(method=method,control=list(maxit=maxIter,factr=factr,trace=trace,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR))
             }else{
-                return(list(method=method,control=list(maxit=maxIter,reltol=tolerance,trace=trace,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+                return(list(method=method,control=list(maxit=maxIter,reltol=tolerance,trace=trace,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
             }
     }else if (method == "Port") {
-        return(list(method=method,control=list(iter.max=(maxIter+50),rel.tol=tolerance*1e-1,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+        return(list(method=method,control=list(iter.max=(maxIter+50),rel.tol=tolerance*1e-1,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
     }else if (method == "Marq") {
-        return(list(method=method,control=list(maxiter=maxIter,ftol=tolerance,ptol=tolerance,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+        return(list(method=method,control=list(maxiter=maxIter,ftol=tolerance,ptol=tolerance,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
     } else if (method == "LM") {
-      return(list(method=method,control=list(maxiter=maxIter,ftol=tolerance,ptol=tolerance,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+      return(list(method=method,control=list(maxiter=maxIter,ftol=tolerance,ptol=tolerance,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
+    }else if (method == "TRR") {
+      return(list(method=method,control=list(maxiter=maxIter,ftol=tolerance,ptol=tolerance,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
     }else if (method == "Pseudo") {
-        return(list(method=method,control=list(numiter=maxIter,varleft=tolerance,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq ,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol))
+        return(list(method=method,control=list(numiter=maxIter,varleft=tolerance,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq ,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR))
 
     }else if(method=='trust'){
-        return(list(method=method,control = list(rhobeg=rhobeg,rhoend=tolerance/rhobeg,iprint=iprint,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod ,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol))
+        return(list(method=method,control = list(rhobeg=rhobeg,rhoend=tolerance/rhobeg,iprint=iprint,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod ,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR))
     }else if(method=='spg'){
-        return(list(method=method,control=list(maxit=maxIter,ftol=tolerance,trace=trace,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+        return(list(method=method,control=list(maxit=maxIter,ftol=tolerance,trace=trace,...),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
     }else if(method=='nmk'){
-        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
     }else if(method=='dfoptim'){
-        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol))
+        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR))
     }else if(method=='DEoptim'){
-        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
     }else if(method=='Rvmmin'){
-        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
     }else if(method=='Rcgmin'){
-        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
         }else if(method=='ucminf'){
-        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol ))
+        return(list(method=method,control=list(),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR ))
     }else if(method=='solnp'){
-        return(list(method=method,control=list(delta=delta,tol=tolerance,rho=rho),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol))
+        return(list(method=method,control=list(delta=delta,tol=tolerance,rho=rho),odesolver=odesolver,atol=atol,rtol=rtol,marqctr= marqctr,goMarq=goMarq,submethod=submethod,Hmethod1='L-BFGS-B',Hmethod2='Marq',quiet.tol=quiet.tol,runTRR=runTRR))
     }
 }
 
