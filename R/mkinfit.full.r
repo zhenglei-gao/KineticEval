@@ -202,7 +202,11 @@ mkinfit.full <- function(mkinmodini,
         }
         ## has to change the odeini order since it is different from the mod_vars order.
         odeini <- odeini[mod_vars]
-        odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
+        if(length(parms.optim)>0) {
+          odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
+        }else{
+          odeparms <- parms.fixed
+        }##odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
 
         outtimes = unique(observed$time)
         evalparse <- function(string)

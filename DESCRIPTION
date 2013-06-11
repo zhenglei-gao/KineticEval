@@ -19,4 +19,4 @@ Collate: 'kingraph.r' 'kingui.control.r' 'kinplot.r'
         'update_kinmod.r' 'kin_mod.r' 'IRLSkinfit.full.0.r'
         'kin_mod_nls.r' 'KinEval.r' 'TRR.r' 'Fit_Schaefer.r' 'ex1.r'
         'ex1_a.r' 'ex2.r' 'versioninfo.r'
-Packaged: 2013-06-03 09:46:34 UTC; gbbfx
+Packaged: 2013-06-07 09:21:35 UTC; gbbfx

@@ -138,7 +138,11 @@ model settings.')
                                                       t(mC1$var[c("SSR.unweighted")])))
     rownames(comparison$SSR.unweighted) <- c("Initial Model","Newly Fitted Model")
     colnames(comparison$SSR.unweighted) <- c("ALL",as.character(mC0$var$name))
-    comparison$SSR.unweighted[,1]<- apply(comparison$SSR.unweighted[,2:3],1,sum)
+    if(length(obs_vars==1)){
+      comparison$SSR.unweighted[,1] <- comparison$SSR.unweighted[,2]
+    }else{
+      comparison$SSR.unweighted[,1]<- apply(comparison$SSR.unweighted[,2:ncol(comparison$SSR.unweighted)],1,sum)
+    }
     if(compareChi2==TRUE){
       ###########
       ## Need to compare the chi-square error!

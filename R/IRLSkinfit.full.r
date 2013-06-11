@@ -85,7 +85,7 @@ IRLSkinfit.full <- function(mkinmodini,
     inpartri <- mkinmodini$inpartri
     outpartri <- mkinmodini$outpartri
     ##
-    options(warn=-1) ## turn off the warning
+    ##options(warn=-1) ## turn off the warning
     #### Control parameters ####
     method <- ctr$method
     odesolver <- ctr$odesolver
@@ -206,7 +206,11 @@ IRLSkinfit.full <- function(mkinmodini,
         }
         ## has to change the odeini order since it is different from the mod_vars order.
         odeini <- odeini[mod_vars]
-        odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
+        if(length(parms.optim)>0) {
+          odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
+        }else{
+          odeparms <- parms.fixed
+        }
 
         outtimes = unique(observed$time)
         evalparse <- function(string)

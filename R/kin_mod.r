@@ -14,7 +14,7 @@
 kin_mod <- function(P,inside=FALSE,plot=TRUE,plottitle,pnames0=NULL, ...)
 {
   ##print(names(P))
-  if(length(P)==0) stop("No parameters?")
+  if(length(P)==0) warning("No parameters need to be optimized?")
   if(is.null(names(P))) {
    if(exists("pnames")) pnames0 <- pnames
    names(P) <- pnames0
@@ -31,7 +31,11 @@ kin_mod <- function(P,inside=FALSE,plot=TRUE,plottitle,pnames0=NULL, ...)
   }
   ## has to change the odeini order since it is different from the mod_vars order.
   odeini <- odeini[mod_vars]
-  odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
+  if(length(parms.optim)>0) {
+    odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
+  }else{
+    odeparms <- parms.fixed
+  }
 
   outtimes = unique(observed$time)
   evalparse <- function(string)

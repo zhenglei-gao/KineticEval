@@ -238,7 +238,11 @@ mcmckinfit.full <- function (mkinmodini,eigen=FALSE,ctr=kingui.control(quiet.tol
             names(odeini) <- c( state.ini.fixed.boxnames)
         }
         odeini <- odeini[mod_vars]
-        odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
+        if(length(parms.optim)>0) {
+          odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
+        }else{
+          odeparms <- parms.fixed
+        }##odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
 
         outtimes = unique(observed$time)
         evalparse <- function(string)

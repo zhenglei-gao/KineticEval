@@ -152,7 +152,11 @@ model settings.')
     comparison$SSR.unweighted <- cbind(rep(NA,1+nrow(newparms)),rbind(t(mC0$var[c("SSR.unweighted")]),do.call(rbind,lapply(mC1,function(x) t(x$var[c("SSR.unweighted")])))))
     rownames(comparison$SSR.unweighted) <- c("Initial Model",paste("With New Parms",1:nrow(newparms)))
     colnames(comparison$SSR.unweighted) <- c("ALL",as.character(mC0$var$name))
-    comparison$SSR.unweighted[,1]<- apply(comparison$SSR.unweighted[,2:ncol(comparison$SSR.unweighted)],1,sum)
+    if(length(obs_vars==1)){
+      comparison$SSR.unweighted[,1] <- comparison$SSR.unweighted[,2]
+    }else{
+      comparison$SSR.unweighted[,1]<- apply(comparison$SSR.unweighted[,2:ncol(comparison$SSR.unweighted)],1,sum)
+    }#comparison$SSR.unweighted[,1]<- apply(comparison$SSR.unweighted[,2:ncol(comparison$SSR.unweighted)],1,sum)
     par(oldpar)
     return(comparison)
   }

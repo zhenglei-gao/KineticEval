@@ -397,6 +397,7 @@ trrcontrol <- function(npar=1,user=NULL,...)
 ##' @param ... other input arguments to fun
 ##' @return a list of result items including par, ssr, etc. 
 ##' @author Zhenglei
+##' @export
 lsqnonlin <- function(fun,xstart,l,u,options=NULL,...)
 {
   npar <- length(xstart)

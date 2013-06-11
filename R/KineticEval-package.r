@@ -17,7 +17,7 @@
 #' }
 #'
 #' @author
-#' Zhenglei Gao \email{zhenglei.gao@@bayer.com}
+#' Zhenglei Gao \email{zhenglei.gao@@bayer.com}, Horatio Meyer and Walter Schmitt.
 #'
 #' Maintainer: Zhenglei Gao \email{zhenglei.gao@@bayer.com}
 #' @name KineticEval-package

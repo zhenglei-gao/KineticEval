@@ -2,14 +2,29 @@ CHANGES IN knitr VERSION 1.0-1
 
 NEW FEATURES
 
+  - added a function `summay.kingui` to summarize a model
+ 
+  - added a few data exapmle sets
+  
+  - added a demo named `Complex_Model`
+  
+BUG FIXES
+
+  - fixed #3, when all parameters fixed, optimization run into error.
+
+CHANGES IN knitr VERSION 1.0-1
+
+NEW FEATURES
+
   - first release of the package KineticEval: it covers most features in KinGUII and was developed based on the package **mkinfit**; see package homepage for documentation and examples:
   http://github.com/zhenglei-gao/KineticEval
   
   - added two new optimization algorithms implementation
   
-  - added a demo named `simpleEval`
+  - added a demo named `simple_KinEval`
   
   - added a function `update_kin_mod` to compare fitting results from different methods or algorithms.
+  
 
 MAJOR CHANGES
 
@@ -22,10 +37,10 @@ BUG FIXES
   - fixed #1: when the inline R code returns `NA_real_`, the scientific
   notation of numbers will run into errors (thanks, Rafik)
 
-  - fixed #2: blabla
+  - fixed #2: when DFOP k=0 or g=0, the calculation of DT50 and DT90 run into errors.
   
 MISC
 
-  - in this NEWS file, #n means the issue number on GitHub, e.g. #142 is
-  https://github.com/zhenglei-gao/KineticEval/issues/142
+  - in this NEWS file, #n means the issue number on GitHub, e.g. #2 is
+  https://github.com/zhenglei-gao/KineticEval/issues/2
 

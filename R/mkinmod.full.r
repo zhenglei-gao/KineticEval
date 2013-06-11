@@ -591,6 +591,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         compound$type <-  "SFO"
     }
     if(!compound$type %in% c("SFO", "FOMC", "DFOP","HS", "SFORB")) stop("Available types are SFO, FOMC, DFOP, HS and SFORB only")
+    #browser()
     if(is.null(compound$sink)) compound$sink <- TRUE # Turn on sink if not specified otherwise
     if(is.null(compound$to))
     {
@@ -617,6 +618,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
                 if(is.null(compound$k)){
                     compound$k <- list(ini= 0.1,fixed = 0,lower = 0.0,upper = Inf)
                 }
+                if(sum(compound$FF$ini)>1) stop("Formation Fractions cannot add up to over 1")
                 compound$kFF=list(ini=compound$FF$ini*compound$k$ini,fixed=compound$FF$fixed*compound$k$fixed,lower=rep(0,n),upper=rep(Inf,n))
                 compound$k_compound_sink <- list(ini=(1-sum(compound$FF$ini))*compound$k$ini,fixed=prod(compound$FF$fixed),lower=0,upper=Inf)
             }
@@ -636,6 +638,12 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
     ## For initial concentration, the same for all types and parametrizations.
     if(is.null(compound$M0)) {## using default. common for all types parametrizations and kinetic models
        if(first==TRUE)  compound$M0 <-list(ini= 100,fixed = 0,lower = 0.0,upper = Inf)  else  compound$M0 <- list(ini = 0,fixed = 1,lower = 0.0,upper = Inf) ## assign 0 for metabolites, 100 for parents.
+    }else{
+      ## check if reasonable!!
+      if(!is.null(compound$residue)){
+        tmp <- na.omit(compound$residue)
+        if(compound$M0$fixed==0) compound$M0$ini <- tmp[1]
+      }
     }
     ## ###
     ## New (sub)compartments (boxes) needed for the model type. Same for both parametrization.
