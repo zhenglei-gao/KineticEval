@@ -67,7 +67,7 @@ KinEval <- function(mkinmodini,
   submethod <- ctr$submethod
   Hmethod1 <- ctr$Hmethod1
   Hmethod2 <- ctr$Hmethod2
-  
+  runTRR <- ctr$runTRR
   ## -----------------------------------
   ## Get the parametrization.
   inpartri <- mkinmodini$inpartri
@@ -234,12 +234,18 @@ KinEval <- function(mkinmodini,
         res0$diag      <- Diag ### ? What is diag here?
         ## if any on the boundary, we should use a trust region method
         if(atBoundary(res0$par,lower,upper)){
-          print("It is not freezing, run a STIR to step aside the boundary problem. Please wait a while.")
-          res0 <- lsqnonlin(f,xstart=res0$par,l=lower,u=upper,plotfit=FALSE,plotRes=FALSE,...)
-          res0$par <- as.vector(res0$xcurr)
-          names(res0$par) <- pnames
-          res0$residuals <- res0$fvec
-          res0$hessian <- 2*t(res0$JACOB)%*%(res0$JACOB)
+          if(runTRR){
+            print("It is not freezing, run a STIR to step aside the boundary problem. Please wait a while.")
+            res0 <- lsqnonlin(f,xstart=res0$par,l=lower,u=upper,plotfit=FALSE,plotRes=FALSE,...)
+            res0$par <- as.vector(res0$xcurr)
+            names(res0$par) <- pnames
+            res0$residuals <- res0$fvec
+            res0$hessian <- 2*t(res0$JACOB)%*%(res0$JACOB)
+          }else{
+            warning("Some Parameters on the boundary, please check the results 
+                    and make sure they are the same as using other optimization algorithms 
+                    like TRR!")
+          }
         }
       }
       if(optimMethod=="TRR") {
@@ -840,7 +846,10 @@ KinEval <- function(mkinmodini,
 ##' @author Zhenglei Gao
 ##' @S3method summary mkinmod.full
 ##' @rdname summary.mkinmod.full
-summary.mkinmod.full<-function(mkinmodini){
+summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control()){
+  odesolver <- ctr$odesolver
+  atol <- ctr$atol
+  rtol <- ctr$rtol
   ## -----------------------------------
   ## Get the parametrization.
   inpartri <- mkinmodini$inpartri
