@@ -117,7 +117,7 @@
 ##' plot(fit)
 ##' }
 ##'
-mcmckinfit.full <- function (mkinmodini,eigen=FALSE,ctr=kingui.control(quiet.tol=1e-5),plottitle='',
+mcmckinfit.full <- function (mkinmodini,eigen=FALSE,ctr=kingui.control(quiet.tol=1e-5,method="solnp"),plottitle='',
     plot = FALSE, quiet = FALSE, err = NULL, weight = "none",
     scaleVar = FALSE,commonsigma=FALSE,jump = NULL,prior = NULL,
     wvar0=0.1,niter = 1000,
@@ -503,8 +503,13 @@ mcmckinfit.full <- function (mkinmodini,eigen=FALSE,ctr=kingui.control(quiet.tol
                 ## ##########################
                 cov0 <- summary(fit)$cov.scaled*2.4^2/length(fit$par)
                 var0 <- fit$var_ms_unweighted
-                res <- modMCMC(cost,fit$par,...,jump=cov0,lower=lower,upper=upper,prior=prior,var0=var0,wvar0=wvar0,niter=niter,outputlength = outputlength, burninlength = burninlength, updatecov = updatecov,ntrydr=ntrydr,drscale=drscale,verbose=verbose)
-
+                if(any(is.na(cov0))){
+                  res <- modMCMC(cost,fit$par,...,
+                                 jump=NULL,lower=lower,upper=upper,prior=prior,var0=var0,wvar0=wvar0,niter=niter,outputlength = outputlength, burninlength = burninlength, updatecov = updatecov,ntrydr=ntrydr,drscale=drscale,verbose=verbose)
+                }else{
+                  res <- modMCMC(cost,fit$par,...,
+                               jump=cov0,lower=lower,upper=upper,prior=prior,var0=var0,wvar0=wvar0,niter=niter,outputlength = outputlength, burninlength = burninlength, updatecov = updatecov,ntrydr=ntrydr,drscale=drscale,verbose=verbose)
+                }
             }
         }else{
             ## Use either the starting value provided by the user or the default values.
@@ -1069,8 +1074,10 @@ summary.mcmckingui <- function (object, remove = NULL, data=TRUE,distimes=TRUE,f
 ##' @S3method print summary.mcmckingui
 ##' @rdname print.summary.mcmckingui
 print.summary.mcmckingui <- function(x,digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
+   cat(paste("KineticeEval Package Version:",packageVersion("KineticEval"),"\n"))
     cat(paste('Version:',x$version,'\n'))
-    cat('\nR version: 2.12.2 (2011-02-25)\n ')
+    ##cat('\nR version: 2.12.2 (2011-02-25)\n ')
+    cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
     cat("\nMethods:MCMC\n")
     if(x$outpartri=='water-sediment')  cat("\nStudy:Water-Sediment\n")
     xx <- x[["diffs"]]

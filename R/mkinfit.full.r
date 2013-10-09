@@ -84,7 +84,7 @@ mkinfit.full <- function(mkinmodini,
   eigen = FALSE,
   plot = FALSE, plottitle='',quiet = FALSE,
   err = NULL, weight = "none", scaleVar = FALSE,
-  ctr=kingui.control(),update=NULL,...)
+  ctr=kingui.control(method="solnp"),update=NULL,...)
 {
     ## Get the parametrization.
     inpartri <- mkinmodini$inpartri

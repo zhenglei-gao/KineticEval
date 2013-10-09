@@ -1,0 +1,33 @@
+\name{print.summary.mkinmod.full}
+\alias{print.summary.mkinmod.full}
+\title{Print method for \code{\link{summary.kingui}}}
+\usage{
+  \method{print}{summary.kingui} (x,
+    digits = max(3, getOption("digits") - 3),
+    detailed = FALSE, ...)
+}
+\arguments{
+  \item{x}{An object of class \code{summary.kingui}}
+
+  \item{digits}{How many digits should be printed after the
+  decimal point.}
+
+  \item{detailed}{Ignore for now.}
+
+  \item{...}{Other parameters to be passed into
+  \code{\link{summary.kingui}}}
+}
+\value{
+  \code{NULL}
+}
+\description{
+  Print method for \code{\link{summary.mkinmod.full}}
+}
+\details{
+  Expanded from \code{\link{print.summary.modFit}} and
+  \code{\link{print.summary.mkinfit}}
+}
+\author{
+  Zhenglei Gao
+}
+

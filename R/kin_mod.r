@@ -159,7 +159,8 @@ kin_mod <- function(P,inside=FALSE,plot=TRUE,plottitle,pnames0=NULL, ...)
   ##mC <- modCost(out_transformed, observed, y = "value",
   ##              err = 'err', weight = "none", scaleVar = FALSE)
   yMod <- rep(NA,length(observed$value))
-  Mod <- mkin_wide_to_long(out_transformed,time="time")
+  Mod <- mkin_wide_to_long(as.data.frame(out_transformed),time="time")
+  ## melt(as.data.frame(out_transformed),id.vars="time")
   names(Mod) <- c("name",  "time", "yMod")
   all <- merge(observed,Mod,by.x=c("name","time"),sort=FALSE)
   yMod <- all$yMod

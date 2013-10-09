@@ -5,8 +5,9 @@
   IRLSkinfit.full(mkinmodini, eigen = FALSE, plot = FALSE,
     plottitle = "", quiet = FALSE, err = NULL,
     weight = "none", scaleVar = FALSE,
-    ctr = kingui.control(), irls.control = list(),
-    update = NULL, useHsolnp = FALSE, ...)
+    ctr = kingui.control(method = "solnp"),
+    irls.control = list(), update = NULL,
+    useHsolnp = FALSE, ...)
 }
 \arguments{
   \item{mkinmodini}{A list of class

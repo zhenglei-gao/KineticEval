@@ -1,0 +1,175 @@
+##'@export
+emptyreport <- function(version="2.2013.0923.1534"){
+  ## Produce empty report
+  ## used when the mkinmod.full does not produce anything.
+  ## example: empres <- emptyreport()
+  res <- NULL
+  res$version <- version
+  res$mess <- "Wrong model setup"
+  class(res) <- "emptyReport"
+  return(res)
+  
+}
+emptygraph <- function(filename="mod.kgg"){
+  out <- data.frame("time"=NA,"Parent"=NA)
+  write.table(out,filename,sep="\t")
+}
+print.emptyReport <- function(x){
+  cat(paste("KineticeEval Package Version:",packageVersion("KineticEval"),"\n"))
+  cat(paste('Version:',x$version,'\n'))
+  ##cat('\nR version: 2.12.2 (2011-02-25)\n ')
+  cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
+  if(!is.null(x$outpartri)){
+    if(x$outpartri=='water-sediment')  cat("\nStudy:Water-Sediment\n")
+  }
+  cat("\nOptimization Algorithms Used:\n")
+  print(ifelse(is.null(x$optimmethod),"",(x$optimmethod)))
+  cat("\n##Comment:\n")
+  print(ifelse(is.null(x$mess),"",(x$mess)))
+  cat("\nEquations:\n")
+  
+  cat("\nStarting values for optimised parameters:\n")
+  
+  cat("\nFixed parameter values:\n")
+  
+  
+  cat("\nOptimised parameters:\n")
+  cat("\nEstimated formation fractions:\n")
+  printff <- !is.null(x$ff)
+  if(printff){
+    print(data.frame(ff = x$ff), digits=digits,...)
+  }
+  
+  
+  
+  
+  cat("\nChi2 error levels in percent :\n")
+  cat("\nEstimated disappearance times:\n")
+  printdistimes <- !is.null(x$distimes)
+  if(printdistimes){
+    
+    print(x$distimes, digits=digits,...)
+  }
+  
+  
+  
+  cat("\nAdditional Statistics:\n")
+  
+  printcor <- (!is.null(x$cov.unscaled))
+  if (printcor){
+    
+    np <- nrow(x$fixed)
+    Corr <- matrix(data = NA, nrow = np, ncol = np)
+    
+    rownames(Corr) <- colnames(Corr) <- rownames(x$fixed)#rownames(x$par)
+    cat("\nParameter correlation:\n")
+    print(Corr, digits = digits, ...)
+  }
+  
+  
+  printdata <- !is.null(x$data)
+  if (printdata){
+    cat("\nData:\n")
+    print(myformat(x$data, digits = digits, scientific=F,...), row.names = FALSE)
+    #sprintf("%.4f",x$data)
+  }
+  
+  invisible(x)
+}
+
+##' Print method for \code{\link{summary.mkinmod.full}}
+##'
+##' Expanded from \code{\link{print.summary.modFit}} and \code{\link{print.summary.mkinfit}}
+##' @title Print method for \code{\link{summary.kingui}}
+##' @method print summary.kingui
+##' @param x An object of class \code{summary.kingui}
+##' @param digits How many digits should be printed after the decimal point.
+##' @param detailed Ignore for now.
+##' @param ... Other parameters to be passed into \code{\link{summary.kingui}}
+##' @return \code{NULL}
+##' @author Zhenglei Gao
+##' @S3method print summary.mkinmod.full
+##' @rdname print.summary.mkinmod.full
+print.summary.mkinmod.full <- function(x, digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
+  cat(paste("KineticeEval Package Version:",packageVersion("KineticEval"),"\n"))
+  cat(paste('Version:',x$version,'\n'))
+  ##cat('\nR version: 2.12.2 (2011-02-25)\n ')
+  cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
+  if(!is.null(x$outpartri)){
+    if(x$outpartri=='water-sediment')  cat("\nStudy:Water-Sediment\n")
+  }
+  xx <- x[["diffs"]]
+  cat("\nOptimization Algorithms Used:\n")
+  print(ifelse(is.null(x$optimmethod),"",(x$optimmethod)))
+  cat("\n##Comment:\n")
+  print(ifelse(is.null(x$mess),"",(x$mess)))
+  cat("\nEquations:\n")
+  for(i in 1:length(xx)) print(noquote(as.character(xx[i])))
+  df  <- x$df
+  rdf <- df[2]
+  
+  cat("\nStarting values for optimised parameters:\n")
+  if(x$outpartri=='default') print(x$start0) else print(x$start)
+  
+  cat("\nFixed parameter values:\n")
+  if(x$outpartri=='default') {
+    if(length(x$fixed0$value) == 0) cat("None\n")
+    else print(x$fixed0)
+  }else{
+    if(length(x$fixed$value) == 0) cat("None\n")
+    else print(x$fixed)
+  }
+  
+  cat("\nOptimised parameters:\n")
+  ifelse(is.null(x$par),"",printCoefmat(x$par, digits = digits, ...))
+  if(is.null(x$sigma)){
+    
+  }else{
+    cat("\nResidual standard error:",
+        format(signif(x$sigma, digits)), "on", rdf, "degrees of freedom\n")
+  }
+  
+  printff <- !is.null(x$ff)
+  if(printff){
+    cat("\nEstimated formation fractions:\n")
+    print(data.frame(ff = x$ff), digits=digits,...)
+  }
+  
+  
+  
+  
+  cat("\nChi2 error levels in percent :\n")
+  print(x$errmin[,1:3], digits=digits,...)
+  
+  printdistimes <- !is.null(x$distimes)
+  if(printdistimes){
+    cat("\nEstimated disappearance times:\n")
+    print(x$distimes, digits=digits,...)
+  }
+  
+  
+  
+  cat("\nAdditional Statistics:\n")
+  print(x$errmin[,4:ncol(x$errmin)], digits=digits,...)
+  
+  printcor <- (!is.null(x$cov.unscaled))
+  if (printcor){
+   
+    np <- nrow(x$fixed)
+    Corr <- matrix(data = NA, nrow = np, ncol = np)
+    
+    rownames(Corr) <- colnames(Corr) <- rownames(x$fixed)#rownames(x$par)
+    cat("\nParameter correlation:\n")
+    print(Corr, digits = digits, ...)
+  }
+  
+  
+  printdata <- !is.null(x$data)
+  if (printdata){
+    cat("\nData:\n")
+    print(myformat(x$data, digits = digits, scientific=F,...), row.names = FALSE)
+    #sprintf("%.4f",x$data)
+  }
+  
+  invisible(x)
+}

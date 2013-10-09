@@ -47,9 +47,10 @@
 ##' see also the R core function \code{norm}
 ##' @title Compute the 2-norm of a vector
 ##' @param x a vector
+##' @param na.rm logical, whether to remove NAs.
 ##' @return the 2-norm of the vector
 ##' @author Zhenglei Gao
-norm <- function(x) sqrt(sum(x^2))
+norm <- function(x,na.rm=TRUE) sqrt(sum(x^2,na.rm=na.rm))
 
 ##' Define the control parameters for the STIR algorithm
 ##'
@@ -989,9 +990,9 @@ fdjacobian <- function(func,x,method="Richardson",method.args=list(eps=sqrt(.Mac
 {
   ## modified according to numDeriv::jacobian
   if(is.null(fval))f <- func(x, ...) else f <- fval
-
-
+  
   n <- length(x)   #number of variables.
+  ##browser()
   if(length(lb)<n) lb <- rep(lb,n)
   if(length(ub)<n) ub <- rep(ub,n)
   if(method=="simple"){
@@ -1060,6 +1061,7 @@ fdjacobian <- function(func,x,method="Richardson",method.args=list(eps=sqrt(.Mac
         h <- abs(d*x)+eps*(abs(x) < args$zero.tol)
         for(k in 1:r)  { # successively reduce h
           for(i in 1:n)  {
+            ##if(i==2) browser()
             a[,k,i] <- (func(x + h*(i==seq(n)), ...) -
                           func(x - h*(i==seq(n)), ...))/(2*h[i])
             #if((k != 1)) a[,(abs(a[,(k-1),i]) < 1e-20)] <- 0 #some func are unstable near zero
@@ -1239,7 +1241,9 @@ trdog <- function(x,g,H,D,delta,dv,
     ##%   Evaluate along the reflected direction?
     qpval3 <- Inf
     ssssave <- mmdis*sssave
-    if(norm(ssssave)<.9*delta){
+    ## here in this case, it could be that a Inf*0
+    if(any(is.nan(ssssave))) normssssave <-Inf else normssssave <- norm(ssssave)
+    if(normssssave<.9*delta){
       r <- mmdis*ssave
       nx <- x+r
       stsave <- mmdis*stsave

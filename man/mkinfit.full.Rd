@@ -6,7 +6,8 @@
   mkinfit.full(mkinmodini, eigen = FALSE, plot = FALSE,
     plottitle = "", quiet = FALSE, err = NULL,
     weight = "none", scaleVar = FALSE,
-    ctr = kingui.control(), update = NULL, ...)
+    ctr = kingui.control(method = "solnp"), update = NULL,
+    ...)
 }
 \arguments{
   \item{mkinmodini}{A list of class \code{mkinmod.full},

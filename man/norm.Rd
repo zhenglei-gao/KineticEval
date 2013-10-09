@@ -2,10 +2,12 @@
 \alias{norm}
 \title{Compute the 2-norm of a vector}
 \usage{
-  norm(x)
+  norm(x, na.rm = TRUE)
 }
 \arguments{
   \item{x}{a vector}
+
+  \item{na.rm}{logical, whether to remove NAs.}
 }
 \value{
   the 2-norm of the vector

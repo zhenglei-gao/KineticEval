@@ -2,7 +2,7 @@
 \alias{summary.mkinmod.full}
 \title{summary method for mkinmod.full}
 \usage{
-  summary.mkinmod.full(mkinmodini)
+  summary.mkinmod.full(mkinmodini, ctr = kingui.control())
 }
 \arguments{
   \item{mkinmodini}{Kinetic Model or fit results with all

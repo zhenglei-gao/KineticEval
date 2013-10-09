@@ -8,7 +8,7 @@ evaluations using NLS and IRLS.}
     rtol = 1e-10, rhobeg = 0.05, iprint = 1, trace = 0,
     goMarq = 0, delta = 1e-06, rho = 1, submethod = "Port",
     Hmethod1 = "LM", Hmethod2 = "L-BFGS-B", quiet.tol = 1,
-    ...)
+    automate = TRUE, ...)
 }
 \arguments{
   \item{method}{The method to be used, one of "Rsolnp",

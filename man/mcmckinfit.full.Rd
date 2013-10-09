@@ -4,7 +4,7 @@
 \title{Fit a kinetic model using MCMC methods.}
 \usage{
   mcmckinfit.full(mkinmodini, eigen = FALSE,
-    ctr = kingui.control(quiet.tol = 1e-05),
+    ctr = kingui.control(quiet.tol = 1e-05, method = "solnp"),
     plottitle = "", plot = FALSE, quiet = FALSE,
     err = NULL, weight = "none", scaleVar = FALSE,
     commonsigma = FALSE, jump = NULL, prior = NULL,

@@ -1,4 +1,24 @@
-CHANGES IN knitr VERSION 1.0-1
+CHANGES IN KineticEval VERSION 1.0-7
+
+NEW FEATURES
+
+  - No new features
+  
+BUG FIXES
+
+  - fixed #1, FOMC not calculated.
+
+CHANGES IN KineticEval VERSION 1.0-5
+
+NEW FEATURES
+
+  - No new features
+  
+BUG FIXES
+
+  - fixed #2, starting value reported by lab people need to be changed.
+
+CHANGES IN KineticEval VERSION 1.0-4
 
 NEW FEATURES
 
@@ -10,9 +30,9 @@ NEW FEATURES
   
 BUG FIXES
 
-  - fixed #3, when all parameters fixed, optimization run into error.
+  - fixed #3, DFOP model for metabolite is re-established in the correct form.
 
-CHANGES IN knitr VERSION 1.0-1
+CHANGES IN KineticEval VERSION 1.0-1
 
 NEW FEATURES
 

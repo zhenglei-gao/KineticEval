@@ -6,7 +6,8 @@
     varname = NULL, first = FALSE,
     inpartri = c("default", "water-sediment", "advanced"),
     outpartri = c("default", "water-sediment", "advanced"),
-    data = NULL, weight = NULL, update = NULL, ...)
+    data = NULL, weight = NULL, autoInit = TRUE,
+    update = NULL, ...)
 }
 \arguments{
   \item{compound}{A list of properties for a single

@@ -4,7 +4,7 @@
 \usage{
   KinEval(mkinmodini,
     evalMethod = c("NLLS", "IRLS", "MCMC", "directMLE"),
-    optimMethod = c("LM", "TRR", "port", "nls2", "Nash", "Marq", "Port", "Newton", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Pseudo", "trust", "spg", "ucminf", "nmk", "Rcgmin", "Rvmmin", "deoptim", "solnp"),
+    optimMethod = c("LM", "TRR", "Byrd", "GENOUD", "bobyqa", "port", "nls2", "Nash", "Marq", "Port", "Newton", "Nelder-Mead", "BFGS", "CG", "L-BFGS-B", "SANN", "Pseudo", "trust", "spg", "ucminf", "nmk", "Rcgmin", "Rvmmin", "deoptim", "solnp"),
     eigen = FALSE, plotfit = TRUE, plotRes = FALSE,
     plottitle = "", quiet = FALSE, ctr = kingui.control(),
     irls.control = list(), MCMCoptions = MCMCcontrol(),

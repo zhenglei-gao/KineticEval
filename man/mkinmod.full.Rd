@@ -5,7 +5,7 @@
   mkinmod.full(...,
     inpartri = c("default", "water-sediment", "advanced"),
     outpartri = c("default", "water-sediment", "advanced"),
-    data = NULL, weight = NULL)
+    data = NULL, weight = NULL, autoInit = TRUE)
 }
 \arguments{
   \item{...}{Each list cell represents a comparment which

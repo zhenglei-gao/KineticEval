@@ -1,11 +1,12 @@
 Package: KineticEval
 Type: Package
 Title: Kinetic Evaluations by NLLS, IRLS and MCMC
-Version: 1.0-2
+Version: 1.0-8
 Date: 2012-03-14
 Author: Zhenglei Gao, Horatio Meyer and Walter Schmitt
 Maintainer: Zhenglei Gao <zhenglei.gao@bayer.com>
 Description: More about what it does (maybe more than one line)
+BugReports: https://github.com/zhenglei-gao/KineticEval/issues
 Depends: R (>= 2.12), mkin
 Imports: FME, Rsolnp, optimx, BB, minqa, deSolve, coda, minpack.lm
 Suggests: MASS, ucminf, Rcgmin, Rvmmin, setRNG
@@ -18,5 +19,5 @@ Collate: 'kingraph.r' 'kingui.control.r' 'kinplot.r'
         'andrew.r' 'compare_multi_kinmod.r' 'kin_mod_cost.r'
         'update_kinmod.r' 'kin_mod.r' 'IRLSkinfit.full.0.r'
         'kin_mod_nls.r' 'KinEval.r' 'TRR.r' 'Fit_Schaefer.r' 'ex1.r'
-        'ex1_a.r' 'ex2.r' 'versioninfo.r'
-Packaged: 2013-06-07 09:21:35 UTC; gbbfx
+        'ex1_a.r' 'ex2.r' 'versioninfo.r' 'solution.r' 'erroroutput.r'
+Packaged: 2013-10-08 13:54:27 UTC; gbbfx

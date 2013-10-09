@@ -43,7 +43,7 @@
 ##' @export
 KinEval <- function(mkinmodini,
                     evalMethod=c('NLLS','IRLS','MCMC','directMLE'),
-                    optimMethod=c("LM","TRR","port","nls2","Nash","Marq", "Port", "Newton", "Nelder-Mead", "BFGS",
+                    optimMethod=c("LM","TRR","Byrd","GENOUD","bobyqa","port","nls2","Nash","Marq", "Port", "Newton", "Nelder-Mead", "BFGS",
                                   "CG","L-BFGS-B", "SANN", "Pseudo",'trust',
                                   'spg','ucminf','nmk','Rcgmin','Rvmmin','deoptim','solnp'),
                     eigen = FALSE,
@@ -77,6 +77,7 @@ KinEval <- function(mkinmodini,
   ## mkinmodini is an object by mkinmod.full
   parms.ini <- mkinmodini$parms.ini
   state.ini <- mkinmodini$state.ini
+  state.ini.orig <- mkinmodini$state.ini.orig
   lower <- mkinmodini$lower
   upper <- mkinmodini$upper
   fixed_parms <- mkinmodini$fixed_parms
@@ -109,11 +110,13 @@ KinEval <- function(mkinmodini,
   state.ini.fixed <- state.ini[fixed_initials]
   optim_initials <- setdiff(names(state.ini), fixed_initials)
   state.ini.optim <- state.ini[optim_initials]
+  state.ini.orig.optim <- state.ini.orig[optim_initials]
   state.ini.optim.boxnames <- names(state.ini.optim)
   state.ini.fixed.boxnames <- names(state.ini.fixed)
   if(length(state.ini.optim) > 0) {
     names(state.ini.optim) <- paste('M0',names(state.ini.optim),  sep="_")
-  }
+    names(state.ini.orig.optim) <- names(state.ini.optim)
+    }
   if(length(state.ini.fixed) > 0) {
     names(state.ini.fixed) <- paste('M0',names(state.ini.fixed), sep="_")
   }
@@ -158,7 +161,7 @@ KinEval <- function(mkinmodini,
     fit$par <- c(state.ini.optim,parms.optim)
     environment(kin_mod_cost) <- environment()
     costout <- kin_mod_cost(P=c(state.ini.optim,parms.optim))
-    ## browser()
+    
     fit$costout <- costout
     fit$out_predicted <- out_predicted
     class(fit) <- "mkinmod.full"
@@ -207,7 +210,7 @@ KinEval <- function(mkinmodini,
         res0 <- nls(y ~ kin_mod_nls(P,pnames=names(oldparms)),start=list(P=oldparms),lower=lower,upper=upper,algorithm="port")
         
       }
-      ##browser()
+      
       if(plotfit==TRUE) x11()
       f <- function(P,plotfit=FALSE,plotRes=FALSE,...){
         if(plotfit==TRUE) res <- observed$value-kin_mod(P,inside=TRUE,...) else{
@@ -218,11 +221,14 @@ KinEval <- function(mkinmodini,
         id <- which(is.na(res))
         if(length(id)>0) return(res[-id]) else return(res)
       }
+      f2<-function(P,plotfit=FALSE,plotRes=FALSE,...){
+        sum(f(P,plotfit=plotfit,plotRes=plotRes,...)^2)
+      }
       
       if(optimMethod=="LM") {
         res0 <- nls.lm(par=oldparms,lower=lower,upper=upper,fn=f,plotfit=plotfit,plotRes=plotRes,...)
         ## res0 <- nls.lm(par=oldparms,lower=lower,upper=upper,fn=f)
-        ## browser()
+        ##browser()
         # renaming results for compatibility with other methods
         names(res0)[7] <- "iterations"  # called "niter" here
         names(res0)[9] <- "ssr"         # called "deviance" here
@@ -236,7 +242,7 @@ KinEval <- function(mkinmodini,
         if(atBoundary(res0$par,lower,upper)){
           if(runTRR){
             print("It is not freezing, run a STIR to step aside the boundary problem. Please wait a while.")
-            res0 <- lsqnonlin(f,xstart=res0$par,l=lower,u=upper,plotfit=FALSE,plotRes=FALSE,...)
+            res0 <- lsqnonlin(f,xstart=res0$par,l=lower,u=upper,plotfit=plotfit,plotRes=FALSE,...)
             res0$par <- as.vector(res0$xcurr)
             names(res0$par) <- pnames
             res0$residuals <- res0$fvec
@@ -245,8 +251,33 @@ KinEval <- function(mkinmodini,
             warning("Some Parameters on the boundary, please check the results 
                     and make sure they are the same as using other optimization algorithms 
                     like TRR!")
+            runByrd <- FALSE
+            if(runByrd){
+              print("not freezing!")
+              res0 <- optim(res0$par,f2,gr=NULL,plotfit=plotfit,method="L-BFGS-B",lower=lower,upper=upper,hessian=TRUE)
+              names(res0)[2] <- "ssr"
+            }
           }
         }
+      }
+      if(optimMethod=="Byrd"){
+        
+        res0 <- optim(oldparms,f2,gr=NULL,plotfit=plotfit,method="L-BFGS-B",lower=lower,upper=upper,hessian=TRUE)
+        names(res0)[2] <- "ssr"
+      }
+      if(optimMethod=="GENOUD"){
+        stop("GENOUD is too slow, not fully tested and implemented yet!")
+        
+        replaceINF <- function(x){
+          x[x==Inf] <- 10^5
+        }
+        res0 <- genoud(fn=f2,nvars=length(oldparms),
+                       Domains=cbind(lower,replaceINF(upper)),hessian=TRUE,plotfit=plotfit)
+      }
+      if(optimMethod=="bobyqa"){
+        ## 
+        stop("not good result, too many function evaluations!")
+        res1 <- bobyqa(par=res0$par,fn=f2,lower=lower,upper=upper,plotfit=plotfit)
       }
       if(optimMethod=="TRR") {
         res0 <- lsqnonlin(f,xstart=oldparms,l=lower,u=upper,plotfit=plotfit,plotRes=plotRes,...)
@@ -262,6 +293,7 @@ KinEval <- function(mkinmodini,
         stop("Not fully implemented yet")
         ## res0 <- nlxb(y ~ kin_mod(P,pnames=names(oldparms)),start=list(P=oldparms),lower=lower,upper=upper)
         res0 <- nlfb(start=oldparms, resfn=f,lower=lower,upper=upper)
+        
       }
       if(optimMethod == "nls2"){
         stop("Not fully implemented yet")
@@ -294,10 +326,18 @@ KinEval <- function(mkinmodini,
             id <- which(is.na(res))
             if(length(id)>0) return(res[-id]) else return(res)
           }
+          
+          f12 <- function(P,...){
+            return(sum(f1(P,...)^2))
+          }
           if(optimMethod=="LM") res0 <- nls.lm(par=res0$par,lower=lower,upper=upper,fn=f1)
           if(optimMethod=="TRR") {
-            ##browser()
+            
             res0 <- lsqnonlin(f1,xstart=res0$par,l=lower,u=upper,...)
+          }
+          if(optimMethod=="Byrd"){
+            res0 <- optim(res0$par,f12,method="L-BFGS-B",lower=lower,upper=upper,hessian=TRUE)
+            res0$fvec <- f1(res0$par)
           }
           ERR1 <- as.vector(errstd[as.character(observedComplete$name)])
           y <- res0$fvec*ERR1
@@ -324,11 +364,14 @@ KinEval <- function(mkinmodini,
           res0$hessian <- 2*t(res0$JACOB)%*%(res0$JACOB)
           ##res0$diag <- ?
         }
+        if(optimMethod=="Byrd"){
+          names(res0)[2]<- "ssr"
+        }
         
       }
       #### Now deal with hessian!!!!!!
       np <- length(res0$par)
-      ##browser()
+      
       res0$covar <-  try(solve(0.5*res0$hessian), silent = TRUE)
       if(!is.numeric(res0$covar)){
         ## try once again!
@@ -360,21 +403,29 @@ KinEval <- function(mkinmodini,
         environment(kin_mod_cost) <- environment()
         tmp <- kin_mod_cost(res0$par)
         ## Run MCMC
+        niter <- MCMCoptions$niter
         attach(MCMCoptions)
         npar <- length(res0$par)
         nobs <- length(y)
         cov0 <- res0$covar*res0$ssr/(nobs-npar)*2.4^2/npar
         var0 <- tmp$var$SSR.unweighted/tmp$var$N 
         names(var0) <- tmp$var$name
-        res0 <- modMCMC(kin_mod_cost,res0$par,...,jump=cov0,lower=lower,upper=upper,prior=prior,
+		if(any(is.na(cov0))){
+			res0 <- modMCMC(kin_mod_cost,res0$par,...,jump=NULL,lower=lower,upper=upper,prior=prior,
                         var0=var0,wvar0=wvar0,niter=niter,outputlength = outputlength,
                         burninlength = burninlength, updatecov = updatecov,
                         ntrydr=ntrydr,drscale=drscale,verbose=verbose)
+		}else{
+			res0 <- modMCMC(kin_mod_cost,res0$par,...,jump=cov0,lower=lower,upper=upper,prior=prior,
+                        var0=var0,wvar0=wvar0,niter=niter,outputlength = outputlength,
+                        burninlength = burninlength, updatecov = updatecov,
+                        ntrydr=ntrydr,drscale=drscale,verbose=verbose)
+		}
         detach(MCMCoptions)
         err1 <- sqrt(apply(res0$sig,2,mean))
         observed$err <- err1[as.character(paste('var_',observed$name,sep=''))]
         ## #
-        browser()
+        
         res0$par <- apply(res0$pars,2,mean)
         ## names(res0$par) <- pnames
         ## ####################################
@@ -408,7 +459,8 @@ KinEval <- function(mkinmodini,
       ##
       if(outpartri=='default'){
         if(length(state.ini.optim)>0){
-          fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])}else{
+          fit$start0 <- data.frame(initial=state.ini.orig.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])
+          }else{
             fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=numeric(0),upper=numeric(0))
           }
         ##fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])
@@ -421,7 +473,7 @@ KinEval <- function(mkinmodini,
         fit$start0 <- NULL
         fit$fixed0 <- NULL
       }
-      fit$start <- data.frame(initial = c(state.ini.optim, parms.optim))
+      fit$start <- data.frame(initial = c(state.ini.orig.optim, parms.optim))
       fit$start$type = c(rep("state", length(state.ini.optim)), rep("deparm", length(parms.optim)))
       fit$start$lower <- lower
       fit$start$upper <- upper
@@ -438,7 +490,7 @@ KinEval <- function(mkinmodini,
       observed1 <- observed
       observed1 <- observed[!(observed$time==0 & observed$value==0),]
       means <- aggregate(value ~ time + name, data = observed1, mean, na.rm=TRUE)##using the mean of repeated measurements.
-      ##browser()
+      
       ##errdata <- merge(means, predicted_long, observed,by = c("time", "name"), suffixes = c("_mean", "_pred",'_obs'))
       errdata <- merge(means, predicted_long, by = c("time", "name"), suffixes = c("_mean", "_pred"))
       ## !!!here is the problem!!! observed has two values, thus not be able to really merge!!!!
@@ -446,6 +498,7 @@ KinEval <- function(mkinmodini,
       ## names(errdata)[5] <- 'value_obs'
       errobserved <- merge(observed, predicted_long, by = c("time", "name"), suffixes = c("_obs", "_pred"))
       errdata <- errdata[order(errdata$time, errdata$name), ]
+      
       errmin.overall <- chi2err(errdata, length(parms.optim) + length(state.ini.optim),errobserved)
       errmin <- data.frame(err.min = errmin.overall$err.min,
                            n.optim = errmin.overall$n.optim, df = errmin.overall$df,
@@ -508,7 +561,7 @@ KinEval <- function(mkinmodini,
             eval(parse(text = mkinmodini$ff[ff_name]), as.list(parms.all))
         }
         ## ###
-        ##browser()
+        
         for (obs_var in obs_vars) {
           f_tot <- grep(paste(obs_var, "_",sep=''), names(fit$ff), value=TRUE)
           f_exp <- grep(paste(obs_var, "to",obs_var,sep='_'), names(fit$ff), value=TRUE)
@@ -552,29 +605,39 @@ KinEval <- function(mkinmodini,
             ## k1 = parms.all["k1"]
             ## k2 = parms.all["k2"]
             ## g = parms.all["g"]
+            
             k1 = parms.all[k1name]
             k2 = parms.all[k2name]
             g = parms.all[gname]
             f <- function(t, x) {
               ((g * exp( - k1 * t) + (1 - g) * exp( - k2 * t)) - (1 - x/100))^2
             }
-            ## browser()
+            fDT <- function(t, x) {
+              ((g * exp( - k1 * t) + (1 - g) * exp( - k2 * t)) - (1 - x/100))
+            }
+            
             DTmax <- 1000
-            DT50.o <- optimize(f, c(0.0001,DTmax), x=50)$minimum
+          
             DTmax1 <- log(2)/min(k1,k2)
+            DTmin <- log(2)/max(k1,k2)
             if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
-            DT50.o1 <- optimize(f, c(0, DTmax1), x=50)$minimum
-            DT50.o <- ifelse(f(DT50.o,50)>f(DT50.o1,50), DT50.o1,DT50.o)
+            resUniroot <- uniroot(fDT,c(DTmin,DTmax1),x=50)
+            DT50.o <- resUniroot$root
+            if(resUniroot$f.root > 1e-4) print("Uniroot calculation for DFOP DT50 might be wrong!Do an optimization, check if the DT50 in the output make sense!")
+            resOptim <- optimize(f, c(DTmin, DTmax1), x=50)
+            DT50.o1 <- resOptim$minimum
+            if(resOptim$objective > 1e-4) print("One dimentional optimization calculation for DFOP DT50 might be wrong!Doing a uniroot calculation, check if the DT50 in the output make sense!")
+            DT50.o <- ifelse(resUniroot$f.root>resOptim$objective, DT50.o1,DT50.o)
             ##DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
-            DT50 <- DT50.o
-            DT90.o <- optimize(f, c(0.001, DTmax), x=90)$minimum
+            DT50 <- DT50.o            
+            DTmin <- log(10)/max(k1,k2)
             DTmax1 <- log(10)/min(k1,k2)
             if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
-            DT90.o1 <- optimize(f, c(0, DTmax1), x=90)$minimum
-            ##DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
+            DT90.o <- uniroot(fDT,c(DTmin,DTmax1),x=90)$root
+            DT90.o1 <- optimize(f, c(DTmin, DTmax1), x=90)$minimum
+            DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
             DT90 <- DT90.o
-            ##DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
-          }
+            }
           if (type == "HS") {
             k1 = parms.all[k1name]
             k2 = parms.all[k2name]
@@ -711,18 +774,27 @@ KinEval <- function(mkinmodini,
             f <- function(t, x) {
               ((g * exp( - k1 * t) + (1 - g) * exp( - k2 * t)) - (1 - x/100))^2
             }
-            DTmax1 <- log(2)/min(k1,k2)
+            
+            fDT <- function(t, x) {
+              ((g * exp( - k1 * t) + (1 - g) * exp( - k2 * t)) - (1 - x/100))
+            }
+            
             DTmax <- 1000
-            DT50.o <- optimize(f, c(0, DTmax), x=50)$minimum
-            DT50.o1 <- optimize(f, c(0, DTmax1), x=50)$minimum
+            
+            DTmax1 <- log(2)/min(k1,k2)
+            DTmin <- log(2)/max(k1,k2)
+            if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
+            DT50.o <- uniroot(fDT,c(DTmin,DTmax1),x=50)$root
+            DT50.o1 <- optimize(f, c(DTmin, DTmax1), x=50)$minimum
             DT50.o <- ifelse(f(DT50.o,50)>f(DT50.o1,50), DT50.o1,DT50.o)
             ##DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
             DT50 <- DT50.o
-            DT90.o <- optimize(f, c(0, DTmax), x=90)$minimum
+            DTmin <- log(10)/max(k1,k2)
             DTmax1 <- log(10)/min(k1,k2)
-            DT90.o1 <- optimize(f, c(0, DTmax1), x=90)$minimum
+            if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
+            DT90.o <- uniroot(fDT,c(DTmin,DTmax1),x=90)$root
+            DT90.o1 <- optimize(f, c(DTmin, DTmax1), x=90)$minimum
             DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
-            ##DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
             DT90 <- DT90.o
             
           }
@@ -834,7 +906,6 @@ KinEval <- function(mkinmodini,
     }## end if(optimMethod %in% ...) else
     
   }
-  
   # ----------------------------------------
   return(fit)
 }
@@ -847,6 +918,7 @@ KinEval <- function(mkinmodini,
 ##' @S3method summary mkinmod.full
 ##' @rdname summary.mkinmod.full
 summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control()){
+  ## KineticEval::summary.mkinmod.full
   odesolver <- ctr$odesolver
   atol <- ctr$atol
   rtol <- ctr$rtol
@@ -1065,7 +1137,7 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control()){
         f <- function(t, x) {
           ((g * exp( - k1 * t) + (1 - g) * exp( - k2 * t)) - (1 - x/100))^2
         }
-        ## browser()
+        ##browser()
         DTmax <- 1000
         DT50.o <- optimize(f, c(0.0001,DTmax), x=50)$minimum
         DTmax1 <- log(2)/min(k1,k2)
@@ -1300,6 +1372,9 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control()){
   ## Return Data
   out$inpartri <- inpartri
   out$outpartri <- outpartri
+  if(out$outpartri=="default") out$fixed0 <- out$fixed
+  out$mess <- "The fitting of the specified kinetic model is not done."
+  class(out) <- "summary.mkinmod.full"
   return(out)
 }
 ##################
@@ -1310,6 +1385,7 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control()){
 ##' @param ... a list that could be in the list of MCMC control parameters
 ##' @return a list of control parameters for MCMC evaluation method
 ##' @author Zhenglei Gao
+##' @export
 MCMCcontrol <- function(...){
   niter <- 1000
   default <- list(jump = NULL,prior = NULL,

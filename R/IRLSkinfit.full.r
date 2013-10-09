@@ -51,7 +51,7 @@ IRLSkinfit.full <- function(mkinmodini,
   eigen = FALSE,
   plot = FALSE, plottitle='',quiet = FALSE,
   err = NULL, weight = "none", scaleVar = FALSE,
-  ctr=kingui.control(),irls.control=list(),update=NULL,useHsolnp=FALSE,...)
+  ctr=kingui.control(method="solnp"),irls.control=list(),update=NULL,useHsolnp=FALSE,...)
 {
     ## Example of Usage ##
     ## a <- mkinmod.full(
@@ -549,7 +549,7 @@ IRLSkinfit.full <- function(mkinmodini,
       } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
       np <- length(c(state.ini.optim, parms.optim))
       fit$rank <- np
-      fit$df.residual <- length(fit$residuals) - fit$rank
+      fit$df.residual <- length(na.omit(fit$residuals)) - fit$rank
     }else{
       optimmethod <- submethod
     }
@@ -663,8 +663,8 @@ IRLSkinfit.full <- function(mkinmodini,
     ##
     if(outpartri=='default'){
         if(length(state.ini.optim)>0){
-            fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])}else{
-                fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=numeric(0),upper=numeric(0))
+            fit$start0 <- data.frame(initial=state.ini.orig.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])}else{
+                fit$start0 <- data.frame(initial=state.ini.orig.optim,type=rep("state", length(state.ini.optim)),lower=numeric(0),upper=numeric(0))
             }
         ##fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])
         start0 <- mkinmodini$start[mkinmodini$start$fixed==0,]
@@ -676,7 +676,7 @@ IRLSkinfit.full <- function(mkinmodini,
         fit$start0 <- NULL
         fit$fixed0 <- NULL
     }
-    fit$start <- data.frame(initial = c(state.ini.optim, parms.optim))
+    fit$start <- data.frame(initial = c(state.ini.orig.optim, parms.optim))
     fit$start$type = c(rep("state", length(state.ini.optim)), rep("deparm", length(parms.optim)))
     fit$start$lower <- lower
     fit$start$upper <- upper
@@ -701,6 +701,7 @@ IRLSkinfit.full <- function(mkinmodini,
     ## names(errdata)[5] <- 'value_obs'
     errobserved <- merge(observed, predicted_long, by = c("time", "name"), suffixes = c("_obs", "_pred"))
     errdata <- errdata[order(errdata$time, errdata$name), ]
+    
     errmin.overall <- chi2err(errdata, length(parms.optim) + length(state.ini.optim),errobserved)
     errmin <- data.frame(err.min = errmin.overall$err.min,
                          n.optim = errmin.overall$n.optim, df = errmin.overall$df,
@@ -1201,7 +1202,8 @@ summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov 
 ##' @param ... Other parameters to be passed into  \code{\link{format}}
 ##' @return A formatted data frame
 ##' @author Zhenglei Gao
-##' @keywords internal
+##' @keywords format
+##' @export
 myformat <- function(x,digits=4,...)
 {
     ## x is a data frame
@@ -1229,6 +1231,8 @@ myformat <- function(x,digits=4,...)
 ##' @S3method print summary.kingui
 ##' @rdname print.summary.kingui
 print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
+    
+    cat(paste("KineticeEval Package Version:",packageVersion("KineticEval"),"\n"))
     cat(paste('Version:',x$version,'\n'))
     ##cat('\nR version: 2.12.2 (2011-02-25)\n ')
     cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
@@ -1239,6 +1243,8 @@ print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),det
     xx <- x[["diffs"]]
     cat("\nOptimization Algorithms Used:\n")
     print(x$optimmethod)
+    cat("\n##Comment:\n")
+    print(ifelse(is.null(x$mess),"",(x$mess)))
     cat("\nEquations:\n")
     for(i in 1:length(xx)) print(noquote(as.character(xx[i])))
     df  <- x$df
