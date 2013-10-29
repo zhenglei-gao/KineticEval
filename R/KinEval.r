@@ -57,6 +57,11 @@ KinEval <- function(mkinmodini,
   
   #####################
   #### Control parameters ####
+  if("logging" %in% loadedNamespaces()){
+    logall <- TRUE
+  }else{
+    logall <- FALSE
+  }
   method <- ctr$method
   odesolver <- ctr$odesolver
   atol <- ctr$atol
@@ -241,14 +246,34 @@ KinEval <- function(mkinmodini,
         ## if any on the boundary, we should use a trust region method
         if(atBoundary(res0$par,lower,upper)){
           if(runTRR){
+            if(logall==TRUE){
+              loginfo("Some paramter estimates are at boundary, run a STIR to step aside the boundary problem.")
+            }
             print("It is not freezing, run a STIR to step aside the boundary problem. Please wait a while.")
-            res0 <- lsqnonlin(f,xstart=res0$par,l=lower,u=upper,plotfit=plotfit,plotRes=FALSE,...)
+            res00 <- res0
+            res0 <- try(lsqnonlin(f,xstart=res0$par,l=lower,u=upper,plotfit=plotfit,plotRes=FALSE,...),silent=FALSE)
+            if(class(res0)=="try-error"){
+              res0 <- res00
+              rm(res00)
+              if(logall==TRUE){
+                logerror("STIR step failed. Please report this case.")
+                
+                loginfo("Restore the results from LM optimization algorithm.")
+              }
+            }else{
+              if(logall==TRUE){
+                loginfo("STIR step succeeded.")
+              }
             res0$par <- as.vector(res0$xcurr)
             names(res0$par) <- pnames
             res0$residuals <- res0$fvec
             res0$hessian <- 2*t(res0$JACOB)%*%(res0$JACOB)
+          }
           }else{
             warning("Some Parameters on the boundary, please check the results 
+                    and make sure they are the same as using other optimization algorithms 
+                    like TRR!")
+            if(logall==TRUE) logwarn("Some Parameters on the boundary, please check the results 
                     and make sure they are the same as using other optimization algorithms 
                     like TRR!")
             runByrd <- FALSE
@@ -290,10 +315,9 @@ KinEval <- function(mkinmodini,
         
       }
       if(optimMethod== "Nash") {
-        stop("Not fully implemented yet")
+        ## stop("Not fully implemented yet")
         ## res0 <- nlxb(y ~ kin_mod(P,pnames=names(oldparms)),start=list(P=oldparms),lower=lower,upper=upper)
         res0 <- nlfb(start=oldparms, resfn=f,lower=lower,upper=upper)
-        
       }
       if(optimMethod == "nls2"){
         stop("Not fully implemented yet")
@@ -312,7 +336,7 @@ KinEval <- function(mkinmodini,
         observedComplete <- observed[id,]
         errstd <- tapply(y,observed$name[id],sd)
         errstd.old <- rep(1000,length(errstd))
-        diffsigma <- norm(errstd-errstd.old)
+        diffsigma <- KineticEval:::norm(errstd-errstd.old)
         niter <- 0
         while(diffsigma > irls.control$tol && niter <= irls.control$maxIter){
           cat("IRLS iteration at",niter, "; Diff in error variance ", diffsigma,"\n")
@@ -343,7 +367,7 @@ KinEval <- function(mkinmodini,
           y <- res0$fvec*ERR1
           errstd <- tapply(y,observed$name[id],sd)
           niter <- niter+1
-          diffsigma <- norm(errstd-errstd.old)
+          diffsigma <- KineticEval:::norm(errstd-errstd.old)
         }
         ## Renaming some list items to be compatabile.
         if(optimMethod=="LM"){
@@ -375,13 +399,35 @@ KinEval <- function(mkinmodini,
       res0$covar <-  try(solve(0.5*res0$hessian), silent = TRUE)
       if(!is.numeric(res0$covar)){
         ## try once again!
-        if(evalMethod=="NLLS") res0$covar <- calcCovar(res0$par,f=f,fval=res0$residuals,lb=lower,ub=upper,...)
-        if(evalMethod=="IRLS") res0$covar <- calcCovar(res0$par,f=f1,fval=res0$residuals,lb=lower,ub=upper,...)
+       # browser()
+        if(logall==TRUE) {
+          loginfo("Hessian not invertable, try generalized inverse.")
+        }
+        ## Make diagonal value 0 being NA instead of 
+        junk <- qr(res0$hessian)
+        
+        res0$covar <-  try(ginv(0.5*res0$hessian), silent = TRUE)
+        if(class(res0$covar)=="try-error"){
+          if(logall==TRUE) loginfo("Hessian not generalized invertable, please report the case!")
+          if(evalMethod=="NLLS") res0$covar <- calcCovar(res0$par,f=f,fval=res0$residuals,lb=lower,ub=upper,...)
+          if(evalMethod=="IRLS") res0$covar <- calcCovar(res0$par,f=f1,fval=res0$residuals,lb=lower,ub=upper,...)
+        }else{
+          if(junk$rank < length(res0$par)){
+            if(logall==TRUE) loginfo("Hessian is not full rank")
+            problem <-junk$pivot[which(junk$qraux < 1e-12)] 
+            res0$covar[problem,] <- NA
+            res0$covar[,problem] <- NA
+          }
+        }
+        
         if(!is.numeric(res0$covar)){
           print("Not able to estimate the covariance matrix due to non-positive definite hessian")
+          ## browser()
+          ## if(evalMethod=="NLLS") res0$hessian <- optimHess(par=res0$par+0.01,fn=f)
+          ## if(evalMethod=="IRLS") res0$hessian <- optimHess(res0$par,fn=f1)
+          ## res0$covar <- try(solve(0.5*res0$hessian), silent = TRUE)
           res0$covar <- matrix(data = NA, nrow = np, ncol = np)
-          ###### Calculate Hessian!!!  TODO???????????
-          ## V= GCHOL(H-),  V'V
+          ###### Calculate Hessian!!!  
           ############################
         }
       }
@@ -917,7 +963,8 @@ KinEval <- function(mkinmodini,
 ##' @author Zhenglei Gao
 ##' @S3method summary mkinmod.full
 ##' @rdname summary.mkinmod.full
-summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control()){
+summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version="2.2013.0923.1534"){
+ 
   ## KineticEval::summary.mkinmod.full
   odesolver <- ctr$odesolver
   atol <- ctr$atol
@@ -1016,6 +1063,7 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control()){
   observed$err <- ERR
   ## return fixed parameters
   out <- list()
+  out$version <- version
   out$map <- mkinmodini$map
   out$diffs <- mkinmodini$diffs
   out$model <- costout$model
@@ -1080,7 +1128,16 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control()){
   }
   out$errmin <- errmin
   ## return true formation fractions
-  out$ff <- mkinmodini$ff
+  
+  parms.all <- c(parms.ini,state.ini)
+  out$ff <- vector()
+  ff_names = names(mkinmodini$ff)
+  for (ff_name in ff_names)
+  {
+    out$ff[[ff_name]] =
+      eval(parse(text = mkinmodini$ff[ff_name]), as.list(parms.all))
+  }
+  ## ###
   ## return Chi2 error levels in percent
   
   ## Return DT50 and DT90s
@@ -1417,6 +1474,7 @@ calcCovar <- function(par,f,fval,lb,ub,...){
   JACOB <- fdjacobian(func=f,par,fval=fval,lb=lb,ub=ub,...)
   hessian <- t(JACOB)%*%(JACOB)
   covar <-  try(solve(hessian), silent = TRUE)
+  if(class(covar)=="try-error") covar <- try(ginv(hessian), silent = TRUE)
   return(covar)
 }
 

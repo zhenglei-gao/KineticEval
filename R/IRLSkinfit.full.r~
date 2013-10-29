@@ -2,19 +2,19 @@
 ##'
 ##' Instead of implicitly assuming equal error variances or giving arbitrary weights decided by the researcher as in the NLS algorithm,  an iteratively reweighted least squares (IRLS) algorithm was implemented to obtain the maximum likelihood estimates of the kinetic model parameters.
 ##' @title Fit a kinetic model using the IRLS algorithm.
-##' @param mkinmodini A list of class \code{\link{mkinmod.full}}, containing the kinetic model to be fitted to the data, and the initial parameter values, the observed data.
-##' @param eigen If TRUE,  the solution of the system of differential equation should be based on the spectral decomposition of the coefficient matrix in cases that this is possible.
+##' @param mkinmodini  A list of class \code{\link{mkinmod.full}}, containing the kinetic model to be fitted to the data, and the initial parameter values, the observed data.
+##' @param eigen  If TRUE,  the solution of the system of differential equation should be based on the spectral decomposition of the coefficient matrix in cases that this is possible.
 ##' @param plot If TRUE,the observed values and the numerical solutions should be plotted at each stage of the optimisation.
 ##' @param plottitle The title of the plot for visualizing the optimization process.
-##' @param quiet If TRUE, suppress printing out the current model cost after each(>1) improvement.
-##' @param err See argumetns of \code{\link{mkinfit.full}}
+##' @param quiet  If TRUE, suppress printing out the current model cost after each(>1) improvement.
+##' @param err  See argumetns of \code{\link{mkinfit.full}}
 ##' @param weight See argumetns of \code{\link{mkinfit.full}}
 ##' @param scaleVar See argumetns of \code{\link{mkinfit.full}}
 ##' @param ctr A list of control values for the estimation algorithm to replace the default values including maximum iterations and absolute error tolerance.  Defaults to the output of \code{\link{kingui.control}}.
 ##' @param irls.control A list of control values for the estimation algorithm to replace the default values including the maximum number of iterations for the outer iteration and the error tolerance level for the error variance estimation updating.
 ##' @param update If not NULL, should be a list of starting values obtained from other optimization methods.
 ##' @param useHsolnp Whether to use the hessian matrix derived from the solnp optimization algorithm.
-##' @param ... Further arguments that will be passed to \code{\link{modFit}}.
+##' @param ...  Further arguments that will be passed to \code{\link{modFit}}.
 ##' @return A list with  "kingui", "mkinfit" and "modFit" in the class attribute. A summary can be obtained by \code{\link{summary.kingui}}.
 ##' @author Zhenglei Gao
 ##' @examples
@@ -29,7 +29,7 @@
 ##'  inpartri='default',
 ##'  outpartri='default',
 ##'  data=mkin::schaefer07_complex_case,
-##'  weight=NULL)
+##'  weight=NULL) 
 ##' Fit    <- IRLSkinfit.full(
 ##'            complex,
 ##'               plot      = TRUE,
@@ -51,7 +51,7 @@ IRLSkinfit.full <- function(mkinmodini,
   eigen = FALSE,
   plot = FALSE, plottitle='',quiet = FALSE,
   err = NULL, weight = "none", scaleVar = FALSE,
-  ctr=kingui.control(method="solnp"),irls.control=list(),update=NULL,useHsolnp=FALSE,...)
+  ctr=kingui.control(),irls.control=list(),update=NULL,useHsolnp=FALSE,...)
 {
     ## Example of Usage ##
     ## a <- mkinmod.full(
@@ -85,7 +85,7 @@ IRLSkinfit.full <- function(mkinmodini,
     inpartri <- mkinmodini$inpartri
     outpartri <- mkinmodini$outpartri
     ##
-    ##options(warn=-1) ## turn off the warning
+    options(warn=-1) ## turn off the warning
     #### Control parameters ####
     method <- ctr$method
     odesolver <- ctr$odesolver
@@ -100,7 +100,6 @@ IRLSkinfit.full <- function(mkinmodini,
     ## mkinmodini is an object by mkinmod.full
     parms.ini <- mkinmodini$parms.ini
     state.ini <- mkinmodini$state.ini
-    state.ini.orig <- mkinmodini$state.ini.orig
     lower <- mkinmodini$lower
     upper <- mkinmodini$upper
     fixed_parms <- mkinmodini$fixed_parms
@@ -131,12 +130,10 @@ IRLSkinfit.full <- function(mkinmodini,
     state.ini.fixed <- state.ini[fixed_initials]
     optim_initials <- setdiff(names(state.ini), fixed_initials)
     state.ini.optim <- state.ini[optim_initials]
-    state.ini.orig.optim <- state.ini.orig[optim_initials]
     state.ini.optim.boxnames <- names(state.ini.optim)
     state.ini.fixed.boxnames <- names(state.ini.fixed)
     if(length(state.ini.optim) > 0) {
         names(state.ini.optim) <- paste('M0',names(state.ini.optim),  sep="_")
-        names(state.ini.orig.optim) <- names(state.ini.optim)
     }
     if(length(state.ini.fixed) > 0) {
         names(state.ini.fixed) <- paste('M0',names(state.ini.fixed), sep="_")
@@ -209,11 +206,7 @@ IRLSkinfit.full <- function(mkinmodini,
         }
         ## has to change the odeini order since it is different from the mod_vars order.
         odeini <- odeini[mod_vars]
-        if(length(parms.optim)>0) {
-          odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
-        }else{
-          odeparms <- parms.fixed
-        }
+        odeparms <- c(P[(length(state.ini.optim) + 1):length(P)], parms.fixed)
 
         outtimes = unique(observed$time)
         evalparse <- function(string)
@@ -429,18 +422,18 @@ IRLSkinfit.full <- function(mkinmodini,
         flag <- 0
         optimmethod <-c(optimmethod,submethod)
       }
-
+      
     }else{### method not solnp
       ##fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=Hmethod1,control=list())
       ## browser()
       fit <- modFit1(cost, c(state.ini.optim, parms.optim), lower = lower, upper = upper, method=method,control=control)
       flag <- 0
     }
-
+    
     if(length(irls.control)==0) irls.control <- list(maxIter=5,tol=1e-05)
     if(is.null(irls.control$tol)) tol <- 1e-05 else tol <- irls.control$tol
     if(is.null(irls.control$maxIter)) maxIter <- 5 else  maxIter <- irls.control$maxIter
-
+    
     ##browser()
     if(length(mkinmodini$map)==1){
       ## there is only one parent no need to do the iteration:
@@ -456,7 +449,7 @@ IRLSkinfit.full <- function(mkinmodini,
           fit$var_ms            <- FF$var$SSR/FF$var$N
           fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
           fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
-
+          
           names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
             names(fit$var_ms) <- FF$var$name
         } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
@@ -465,13 +458,13 @@ IRLSkinfit.full <- function(mkinmodini,
       ERR <- err1[as.character(observed$name)]
       observed$err <-ERR
     }
-
+    
     niter <- 1
-
+    
     ## insure one IRLS iteration setup the initials
     diffsigma <- 100
     olderr <- rep(1,length(mod_vars))
-
+    
     while(diffsigma>tol & niter<=maxIter)
     {
       ## # other list need to be attached to fit to give comparable results as in modFit.
@@ -485,7 +478,7 @@ IRLSkinfit.full <- function(mkinmodini,
           fit$var_ms            <- FF$var$SSR/FF$var$N
           fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
           fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
-
+          
           names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
             names(fit$var_ms) <- FF$var$name
         } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
@@ -497,9 +490,9 @@ IRLSkinfit.full <- function(mkinmodini,
       cat("IRLS iteration at",niter, "; Diff in error variance ", diffsigma,"\n")
       olderr <- err1
   #################################################
-
-
-
+      
+      
+      
       if(method=='solnp')
       {
         pnames=names(c(state.ini.optim, parms.optim))
@@ -518,7 +511,7 @@ IRLSkinfit.full <- function(mkinmodini,
           flag <- 0
           optimmethod <-c(optimmethod,submethod)
         }
-
+        
       }else{### method not solnp
         ##fit <- modFit1(cost, fit$par, lower = lower, upper = upper, method=Hmethod1,control=list())
         fit <- modFit1(cost, c(state.ini.optim, parms.optim), lower = lower, upper = upper, method=method,control=control)
@@ -529,7 +522,7 @@ IRLSkinfit.full <- function(mkinmodini,
 
 
       niter <- niter+1
-
+      
       ## # If not converged and not exceeding the iteration limit, reweight and fit
     }
     ##browser()
@@ -546,13 +539,13 @@ IRLSkinfit.full <- function(mkinmodini,
         fit$var_ms            <- FF$var$SSR/FF$var$N
         fit$var_ms_unscaled   <- FF$var$SSR.unscaled/FF$var$N
         fit$var_ms_unweighted <- FF$var$SSR.unweighted/FF$var$N
-
+        
         names(fit$var_ms_unweighted) <- names(fit$var_ms_unscaled) <-
           names(fit$var_ms) <- FF$var$name
       } else fit$var_ms <- fit$var_ms_unweighted <- fit$var_ms_unscaled <- NA
       np <- length(c(state.ini.optim, parms.optim))
       fit$rank <- np
-      fit$df.residual <- length(na.omit(fit$residuals)) - fit$rank
+      fit$df.residual <- length(fit$residuals) - fit$rank
     }else{
       optimmethod <- submethod
     }
@@ -605,14 +598,14 @@ IRLSkinfit.full <- function(mkinmodini,
         message <- "ok"
       }
     ##  }
-
+      
     }else{
       message <- "ok"
     }
     rownames(covar) <- colnames(covar) <-pnames
     fit$covar <- covar
     #####################################
-
+    
 
     ## try to use nloptr for optimization did not work as well as the solnp program
     ## Other choices in nloptr
@@ -666,8 +659,8 @@ IRLSkinfit.full <- function(mkinmodini,
     ##
     if(outpartri=='default'){
         if(length(state.ini.optim)>0){
-            fit$start0 <- data.frame(initial=state.ini.orig.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])}else{
-                fit$start0 <- data.frame(initial=state.ini.orig.optim,type=rep("state", length(state.ini.optim)),lower=numeric(0),upper=numeric(0))
+            fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])}else{
+                fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=numeric(0),upper=numeric(0))
             }
         ##fit$start0 <- data.frame(initial=state.ini.optim,type=rep("state", length(state.ini.optim)),lower=lower[1:length(state.ini.optim)],upper=upper[1:length(state.ini.optim)])
         start0 <- mkinmodini$start[mkinmodini$start$fixed==0,]
@@ -679,7 +672,7 @@ IRLSkinfit.full <- function(mkinmodini,
         fit$start0 <- NULL
         fit$fixed0 <- NULL
     }
-    fit$start <- data.frame(initial = c(state.ini.orig.optim, parms.optim))
+    fit$start <- data.frame(initial = c(state.ini.optim, parms.optim))
     fit$start$type = c(rep("state", length(state.ini.optim)), rep("deparm", length(parms.optim)))
     fit$start$lower <- lower
     fit$start$upper <- upper
@@ -704,7 +697,6 @@ IRLSkinfit.full <- function(mkinmodini,
     ## names(errdata)[5] <- 'value_obs'
     errobserved <- merge(observed, predicted_long, by = c("time", "name"), suffixes = c("_obs", "_pred"))
     errdata <- errdata[order(errdata$time, errdata$name), ]
-    
     errmin.overall <- chi2err(errdata, length(parms.optim) + length(state.ini.optim),errobserved)
     errmin <- data.frame(err.min = errmin.overall$err.min,
                          n.optim = errmin.overall$n.optim, df = errmin.overall$df,
@@ -850,14 +842,12 @@ IRLSkinfit.full <- function(mkinmodini,
                 hso1 <- nlminb(0.0001,f, x=50)
                 hso2 <- nlminb(tb,f, x=50)
                 DT50.o <- ifelse(hso1$objective<=hso2$objective,hso1$par,hso2$par)
-                ##DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
-                DT50 <- DT50.o
+                DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
+
                 hso1 <- nlminb(0.0001,f, x=90)
                 hso2 <- nlminb(tb,f, x=90)
                 DT90.o <- ifelse(hso1$objective<=hso2$objective,hso1$par,hso2$par)
-                ## DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
-                DT90 <- DT90.o
-                
+                DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
                 ## ########### OLD WAY 2
                 ##DT50 <- nlm(f, 0.0001, x=50)$estimate
                 ##DT90 <- nlm(f, 0.0001, x=90)$estimate
@@ -909,9 +899,7 @@ IRLSkinfit.full <- function(mkinmodini,
                     fit$ff[[sub("k_", "", k_out_name)]] = parms.all[[k_out_name]] / k_1output
                 }
             }
-            ##fit$distimes[obs_var, ] = c(ifelse(is.na(DT50),NA,formatC(DT50,4,format='f')), ifelse(is.na(DT90),NA,formatC(DT90,4,format='f')),type)#c(DT50, DT90,type)
-            fit$distimes[obs_var,1:2] <- c(DT50,DT90)
-            fit$distimes[obs_var,3] <- type
+            fit$distimes[obs_var, ] = c(ifelse(is.na(DT50),NA,formatC(DT50,4,format='f')), ifelse(is.na(DT90),NA,formatC(DT90,4,format='f')),type)#c(DT50, DT90,type)
         }
     }
     if(mkinmodini$outpartri=='water-sediment'){
@@ -970,14 +958,12 @@ IRLSkinfit.full <- function(mkinmodini,
                 DT50.o <- optimize(f, c(0, DTmax), x=50)$minimum
                 DT50.o1 <- optimize(f, c(0, DTmax1), x=50)$minimum
                 DT50.o <- ifelse(f(DT50.o,50)>f(DT50.o1,50), DT50.o1,DT50.o)
-                ## DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
-                DT50 <- DT50.o
+                DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
                 DT90.o <- optimize(f, c(0, DTmax), x=90)$minimum
                 DTmax1 <- log(10)/min(k1,k2)
                 DT90.o1 <- optimize(f, c(0, DTmax1), x=90)$minimum
                 DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
-                DT90 <- DT90.o
-                ##DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
+                DT90 = ifelse(DTmax - DT90.o < 0.1, NA, DT90.o)
 
             }
             if (type == "HS") {
@@ -1041,9 +1027,7 @@ IRLSkinfit.full <- function(mkinmodini,
                     fit$ff[[sub("k_", "", k_out_name)]] = parms.all[[k_out_name]] / k_1output
                 }
             }
-            #fit$distimes[obs_var, ] = c(ifelse(is.na(DT50),NA,formatC(DT50,4,format='f')), ifelse(is.na(DT90),NA,formatC(DT90,4,format='f')),type)#c(DT50, DT90,type)
-            fit$distimes[obs_var,1:2] <- c(DT50,DT90)
-            fit$distimes[obs_var,3] <- type
+            fit$distimes[obs_var, ] = c(ifelse(is.na(DT50),NA,formatC(DT50,4,format='f')), ifelse(is.na(DT90),NA,formatC(DT90,4,format='f')),type)#c(DT50, DT90,type)
         }
 
     }
@@ -1083,7 +1067,7 @@ IRLSkinfit.full <- function(mkinmodini,
 ##' @title S3 summary method for class 'kingui'
 ##' @method summary kingui
 ##' @S3method summary kingui
-##' @param object A fitted object of class 'kingui' from the result of
+##' @param object A fitted object of class 'kingui' from the result of 
 ##' \code{\link{mkinfit.full}} or  \code{\link{IRLSkinfit.full}}
 ##' @param data   If TRUE, include in the returned values a data frame containing the observed
 ##' and predicted values with residuals and estimated standard deviations or weights.
@@ -1205,8 +1189,7 @@ summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov 
 ##' @param ... Other parameters to be passed into  \code{\link{format}}
 ##' @return A formatted data frame
 ##' @author Zhenglei Gao
-##' @keywords format
-##' @export
+##' @keywords internal
 myformat <- function(x,digits=4,...)
 {
     ## x is a data frame
@@ -1234,11 +1217,8 @@ myformat <- function(x,digits=4,...)
 ##' @S3method print summary.kingui
 ##' @rdname print.summary.kingui
 print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
-    
-    cat(paste("KineticeEval Package Version:",packageVersion("KineticEval"),"\n"))
     cat(paste('Version:',x$version,'\n'))
-    ##cat('\nR version: 2.12.2 (2011-02-25)\n ')
-    cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
+    cat('\nR version: 2.12.2 (2011-02-25)\n ')
     if(x$outpartri=='water-sediment')  cat("\nStudy:Water-Sediment\n")
     ## cat("\nVersion: ")
     ## print(x$version)
@@ -1246,8 +1226,6 @@ print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),det
     xx <- x[["diffs"]]
     cat("\nOptimization Algorithms Used:\n")
     print(x$optimmethod)
-    cat("\n##Comment:\n")
-    print(ifelse(is.null(x$mess),"",(x$mess)))
     cat("\nEquations:\n")
     for(i in 1:length(xx)) print(noquote(as.character(xx[i])))
     df  <- x$df

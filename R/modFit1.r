@@ -6,6 +6,7 @@
 overrule <- function(ini, new) if(is.null(new)) ini else new
 #require(nleqslv)
 ## internal functions?
+##'@export
 modFit1 <- function(f, p, ..., lower = -Inf, upper = Inf,
                    method = c("Marq", "Port", "Newton", "Nelder-Mead", "BFGS", "CG",
                    "L-BFGS-B", "SANN", "Pseudo",'trust','spg','ucminf','nmk','Rcgmin','Rvmmin','deoptim',"LM"), jac = NULL,

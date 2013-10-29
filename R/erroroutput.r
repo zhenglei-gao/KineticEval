@@ -1,4 +1,87 @@
 ##'@export
+KinReport <- function(mod,Fit,version = "2.2013.0923.1534",filename){
+  if(missing(filename)) filename <- deparse(substitute(mod))
+  ## browser()
+  filename1 <- paste0(filename,".kgo")
+  filename2 <- paste0(filename,".kgg")
+  
+  if(class(mod)=="try-error"){
+    ## when cannot set up the kinetic Model
+    ## empty report and graph data are generated.
+    logerror("Cannot set up the kinetic model, please check your input data!")
+    list2ascii(emptyreport(version=version),filename1)
+    emptygraph(filename2)
+    loginfo("Empty report files are created.")
+  }else{
+    #
+    if(class(Fit)=="try-error"){
+      ## Fit cannot be ran successfully.
+      logerror("The kinetic model cannot be fit properly. Please check your data and your model!")
+      ## write summary using the mod object instead.
+      writesummary <- try(list2ascii(summary(mod, version = version),filename1),silent=TRUE)
+      if(class(writesummary)=="try-error"){
+        logerror("The kinetic model cannot be summarized. Please check your data and your model!")
+        ## finally using an empty report
+        list2ascii(emptyreport(version=version),filename1)
+        loginfo("Empty .kgo report files are created.")
+      }else{loginfo("Summary .kgo file from the model is created.")}
+      ## write graph data using the mod object instead.
+      writegraph <- try(datagraph(mod,filename2),silent=TRUE)
+      if(class(writegraph)=="try-error"){
+        logerror("The data cannot be extracted from the model. Please check your data and your model!")
+        ## finally using an empty report
+        emptygraph(filename2)
+        loginfo("Empty .kgg report files are created.")
+      }else{loginfo("Graph data (.kgg file) is generated using the kinetic model.")}
+      
+    }else{
+      loginfo("Fit is completed successfully")
+      writesummary <- try(list2ascii(summary(Fit, cov = TRUE,version = version),filename1),silent=TRUE)
+      if(class(writesummary)=="try-error"){
+        logerror("The fitted information for the kinetic model cannot be summarized.")
+        
+        ## write summary using the mod object instead.
+        writesummay <- try(list2ascii(summary(mod, version = version),filename1),silent=TRUE)
+        if(class(writesummary)=="try-error"){
+          ## finally using an empty report
+          logerror("The kinetic model cannot be summarized. Please check your data and your model!")
+          list2ascii(emptyreport(version=version),filename)
+          loginfo("Empty .kgo report files are created.")
+        }else{
+          loginfo("Summary .kgo file is generated using the kinetic model.")
+        }
+      }else{
+        loginfo("Summary of the fitted object (.kgo file) is generated.")
+      }
+      writegraph <- try(kingraph(Fit,filename2),silent=TRUE)
+      
+      if(class(writegraph)=="try-error"){
+        ## write graph data using the mod object instead.
+        logerror("The graph data of the fitted object cannot be generated.")
+        writegraph <- try(datagraph(mod,filename2),silent=TRUE)
+        if(class(writegraph)=="try-error"){
+          logerror("The data cannot be extracted from the model. Please check your data and your model!")
+          ## finally using an empty graph
+          emptygraph(filename2)
+          loginfo("Empty .kgg report files are created.")
+        }else{
+          loginfo("Graph data (.kgg file) is generated using the kinetic model.")
+        }
+      }else{
+        loginfo("Graph data of the fitted object (.kgg file) is generated.")
+      }
+      if("mcmckingui" %in% class(Fit)){
+        ## MCMC results need extra Fit plot!
+        plot(Fit,y=NULL,
+             paste0(filename,'.Density'),
+             paste0(filename,'.Correlation'),
+             paste0(filename,'.Trace'),
+             device='wmf')
+      }
+    }
+  }
+}
+##'@export
 emptyreport <- function(version="2.2013.0923.1534"){
   ## Produce empty report
   ## used when the mkinmod.full does not produce anything.
@@ -10,9 +93,14 @@ emptyreport <- function(version="2.2013.0923.1534"){
   return(res)
   
 }
+##'@export
 emptygraph <- function(filename="mod.kgg"){
   out <- data.frame("time"=NA,"Parent"=NA)
   write.table(out,filename,sep="\t")
+}
+##'@export
+datagraph <- function(mod,filename="mod.kgg"){
+  write.table(mod$data,filename,sep="\t")
 }
 print.emptyReport <- function(x){
   cat(paste("KineticeEval Package Version:",packageVersion("KineticEval"),"\n"))

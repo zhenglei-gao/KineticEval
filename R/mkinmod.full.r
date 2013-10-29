@@ -100,6 +100,12 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
  ##    C1 = list(type = "SFO"),
  ##    A2 = list(type = "SFO"),inpartri='water-sediment',outpartri='water-sediment',data=schaefer07_complex_case,weight=NULL)
  ##################################
+ if("logging" %in% loadedNamespaces()){
+   logall <- TRUE
+ }else{
+   logall <- FALSE
+ }
+ 
  inpartri <-  match.arg(inpartri)
  outpartri <-  match.arg(outpartri)
  
@@ -727,6 +733,11 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
   ## if !is.null update, replace the components in compound with the ones in the update.
   
   ## ## Return: A 'completed' compound with a list of properties. for the differential functions related to other compounds, they are derived in the mkinmod.gui function.
+  if("logging" %in% loadedNamespaces()){
+    logall <- TRUE
+  }else{
+    logall <- FALSE
+  }
   
   if(is.null(varname)) varname <-  deparse(substitute(compound))
   compound$name <- varname
@@ -742,6 +753,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
   {
     if(compound$sink==FALSE){
       warning('no to compartments, sink cannot be FALSE')
+      if(logall==TRUE) logwarn("no to compartments, SINK is set to FALSE by you. This is not possible! Do you want to fix the degradation rate being 0?")
       compound$sink <- TRUE
     }
   }else{### in case there are compartments that the compound transform to
