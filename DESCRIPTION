@@ -1,7 +1,7 @@
 Package: KineticEval
 Type: Package
 Title: Kinetic Evaluations by NLLS, IRLS and MCMC
-Version: 1.0-12
+Version: 1.0-17
 Date: 2012-03-14
 Author: Zhenglei Gao, Horatio Meyer and Walter Schmitt
 Maintainer: Zhenglei Gao <zhenglei.gao@bayer.com>
@@ -26,7 +26,8 @@ Imports:
     minqa,
     deSolve,
     coda,
-    minpack.lm
+    minpack.lm,
+    numDeriv
 Suggests:
     MASS,
     ucminf,

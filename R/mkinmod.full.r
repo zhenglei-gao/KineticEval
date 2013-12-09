@@ -753,7 +753,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
   {
     if(compound$sink==FALSE){
       warning('no to compartments, sink cannot be FALSE')
-      if(logall==TRUE) logwarn("no to compartments, SINK is set to FALSE by you. This is not possible! Do you want to fix the degradation rate being 0?")
+      if(logall==TRUE) logwarn(paste("No sink defined for", varname, ". KinGUII fixed the degradation rate(s) to sink being 0." ))
       compound$sink <- TRUE
     }
   }else{### in case there are compartments that the compound transform to
@@ -795,7 +795,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
   ## For initial concentration, the same for all types and parametrizations.
   if(first==TRUE){
     if(is.null(compound$M0)) {## using default. common for all types parametrizations and kinetic models
-      compound$M0 <- list(ini = 100,fixed = 1,lower = 0.0,upper = Inf)
+      compound$M0 <- list(ini = 100,fixed = 0,lower = 0.0,upper = Inf)
       if(!is.null(compound$residue)){
         ## since it is first, there must be a time component!
         compound$M0$ini <- mean(compound$residue[compound$time==0],na.rm=TRUE)     ## here we can change to the fitted value instead if possible.     
@@ -803,9 +803,9 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
       }else{
         if(!is.null(data)){
           compound$M0$ini <- mean(data[data[,1]==0,2],na.rm=TRUE)     ## here we can change to the fitted value instead if possible.     
-          
+          if(logall) loginfo("Initial values for M0 changed to the average concentrations at time 0")
         }else{
-          compound$M0 <- list(ini = 100,fixed = 1,lower = 0.0,upper = Inf) ## assign 0 for metabolites, 100 for parents.
+          compound$M0 <- list(ini = 100,fixed = 0,lower = 0.0,upper = Inf) ## assign 0 for metabolites, 100 for parents.
           
         }
       }
@@ -820,6 +820,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
           compound$M0.orig <- compound$M0
           ##compound$M0$ini <- tmp[1]     ## here we can change to the fitted value instead if possible.     
           compound$M0$ini <- mean(compound$residue[compound$time==0],na.rm=TRUE)
+          if(logall) loginfo("Initial values for M0 changed to the average of time 0")
           }
       }else{
         ## compound$M0 is set up by the user! and there is data available

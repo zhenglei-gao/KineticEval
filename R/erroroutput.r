@@ -1,5 +1,5 @@
 ##'@export
-KinReport <- function(mod,Fit,version = "2.2013.0923.1534",filename){
+KinReport <- function(mod,Fit,version = "2.2013.0923.1534",filename,exactHessian=FALSE){
   if(missing(filename)) filename <- deparse(substitute(mod))
   ## browser()
   filename1 <- paste0(filename,".kgo")
@@ -14,7 +14,7 @@ KinReport <- function(mod,Fit,version = "2.2013.0923.1534",filename){
     loginfo("Empty report files are created.")
   }else{
     #
-    if(class(Fit)=="try-error"){
+    if(class(Fit)[1]=="try-error"){
       ## Fit cannot be ran successfully.
       logerror("The kinetic model cannot be fit properly. Please check your data and your model!")
       ## write summary using the mod object instead.
@@ -36,6 +36,12 @@ KinReport <- function(mod,Fit,version = "2.2013.0923.1534",filename){
       
     }else{
       loginfo("Fit is completed successfully")
+      if(exactHessian){
+        if(class(Fit$numCov)!="try-error"){
+          loginfo("Use the exact hessian calculated using numDeriv instead of the approximated one from the optimization!")
+          Fit$covar <- Fit$numCov
+        }
+      }
       writesummary <- try(list2ascii(summary(Fit, cov = TRUE,version = version),filename1),silent=TRUE)
       if(class(writesummary)=="try-error"){
         logerror("The fitted information for the kinetic model cannot be summarized.")

@@ -1,3 +1,42 @@
+CHANGES IN KineticEval VERSION 1.0-12
+
+NEW FEATURES
+
+  - No new features
+  
+BUG FIXES
+
+  - internal function `norm` to `KineticEval:::norm`
+  - fixed #15, test cases for `ginv`
+
+CHANGES IN KineticEval VERSION 1.0-11
+
+MAJOR CHANGES
+  
+  - Add routines generating logging files. #14
+  - Add routines generating report files, .kgg, .kgo when the model is not correctly set up or when the optimization could not be finished. #14
+
+CHANGES IN KineticEval VERSION 1.0-10
+
+NEW FEATURES
+
+  - Add Comment lines in the output summary file.
+
+CHANGES IN KineticEval VERSION 1.0-9
+
+BUG FIXES
+
+  - fixed #10. using generalized inverse to calculate inverse of the hessian.
+  - fixed #16, with Generalized inverse, output NA where is appropriate.
+
+CHANGES IN KineticEval VERSION 1.0-8
+
+BUG FIXES
+
+  - fixed #11. TRR problematic case
+  - fixed #6. Ghost compartment is correctly handled now.
+  - fixed #5. 3 DFOP models.
+  
 CHANGES IN KineticEval VERSION 1.0-7
 
 NEW FEATURES
@@ -16,7 +55,7 @@ NEW FEATURES
   
 BUG FIXES
 
-  - fixed #2, starting value reported by lab people need to be changed.
+  - fixed starting value problem. starting value reported by lab people need to be changed.
 
 CHANGES IN KineticEval VERSION 1.0-4
 
@@ -24,13 +63,23 @@ NEW FEATURES
 
   - added a function `summay.kingui` to summarize a model
  
-  - added a few data exapmle sets
+  - added a few example data sets
   
   - added a demo named `Complex_Model`
   
+  
+CHANGES IN KineticEval VERSION 1.0-3
+
 BUG FIXES
 
-  - fixed #3, DFOP model for metabolite is re-established in the correct form.
+  - fixed #1 FOMC model result is not calculated.
+  - fixed #2 DFOP DT90 is not correctly calculated.
+
+CHANGES IN KineticEval VERSION 1.0-2
+
+BUG FIXES
+
+  - fixed #0, DFOP model for metabolite is re-established in the correct form.
 
 CHANGES IN KineticEval VERSION 1.0-1
 
@@ -50,17 +99,12 @@ MAJOR CHANGES
 
   - DFOP model for metabolite is re-established in the correct form.
   
-  - Combined `IRLSkinfit.full`, `mkinfit.full`, `mcmckinfit.full` into a single function to avoid replicated codes.
+  - Combined `IRLSkinfit.full`, `mkinfit.full`, `mcmckinfit.full` into a single function `KinEval` to avoid replicated codes.
 
 BUG FIXES
-
-  - fixed #1: when the inline R code returns `NA_real_`, the scientific
-  notation of numbers will run into errors (thanks, Rafik)
 
   - fixed #2: when DFOP k=0 or g=0, the calculation of DT50 and DT90 run into errors.
   
 MISC
 
-  - in this NEWS file, #n means the issue number on GitHub, e.g. #2 is
-  https://github.com/zhenglei-gao/KineticEval/issues/2
-
+  - in this NEWS file, #n means the issue number on GitHub, e.g. #2 is https://github.com/zhenglei-gao/KineticEval/issues/2

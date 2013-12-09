@@ -49,7 +49,7 @@ KinEval <- function(mkinmodini,
                     eigen = FALSE,
                     plotfit= TRUE, plotRes = FALSE, plottitle='',quiet = FALSE,
                     ctr=kingui.control(),irls.control=list(), MCMCoptions=MCMCcontrol(),
-                    update=NULL,useHsolnp=FALSE,
+                    update=NULL,useHsolnp=FALSE,exactHessian=FALSE,
                     
                     ...)
 {
@@ -247,7 +247,7 @@ KinEval <- function(mkinmodini,
         if(atBoundary(res0$par,lower,upper)){
           if(runTRR){
             if(logall==TRUE){
-              loginfo("Some paramter estimates are at boundary, run a STIR to step aside the boundary problem.")
+              loginfo("Some paramter estimates are at boundary, running an STIR to step aside the boundary problem.")
             }
             print("It is not freezing, run a STIR to step aside the boundary problem. Please wait a while.")
             res00 <- res0
@@ -395,13 +395,21 @@ KinEval <- function(mkinmodini,
       }
       #### Now deal with hessian!!!!!!
       np <- length(res0$par)
-      
+      ## browser()
+      if(exactHessian) {
+        ##browser()
+        if(logall) loginfo("Calcluating Numerical Hessian using numDeriv.")
+        if(runIRLS) res0$numH <- try(hessian(f12,res0$par)) else{
+          res0$numH <- try(hessian(f2,res0$par))
+        }
+        res0$numCov <-  try(ginv(0.5*res0$numH), silent = TRUE)
+      }
       res0$covar <-  try(solve(0.5*res0$hessian), silent = TRUE)
       if(!is.numeric(res0$covar)){
         ## try once again!
        # browser()
         if(logall==TRUE) {
-          loginfo("Hessian not invertable, try generalized inverse.")
+          loginfo("Convergence criteria met but final hessian is not positive definite. Trying generalized inverse.")
         }
         ## Make diagonal value 0 being NA instead of 
         junk <- qr(res0$hessian)
@@ -413,8 +421,9 @@ KinEval <- function(mkinmodini,
           if(evalMethod=="IRLS") res0$covar <- calcCovar(res0$par,f=f1,fval=res0$residuals,lb=lower,ub=upper,...)
         }else{
           if(junk$rank < length(res0$par)){
-            if(logall==TRUE) loginfo("Hessian is not full rank")
-            problem <-junk$pivot[which(junk$qraux < 1e-12)] 
+            if(logall==TRUE) loginfo("Hessian is not full rank.")
+            junkR <- diag(res0$covar)
+            problem <- which(junkR < .Machine$double.eps)
             res0$covar[problem,] <- NA
             res0$covar[,problem] <- NA
           }
@@ -443,7 +452,8 @@ KinEval <- function(mkinmodini,
         ## have some redundancy here. #########NEED TO MODIFY HERE!!!!!!
         ## calculate sigma
         y <- res0$fvec
-        errstd <- tapply(y,observed$name,sd)
+        if(!exists("id")) id <- which(!is.na(observed$value))
+        errstd <- tapply(y,observed$name[id],sd)
         ERR <- errstd[as.character(observed$name)]
         observed$err <- ERR
         environment(kin_mod_cost) <- environment()
