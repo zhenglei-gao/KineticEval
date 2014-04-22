@@ -8,8 +8,7 @@
     eigen = FALSE, plotfit = TRUE, plotRes = FALSE,
     plottitle = "", quiet = FALSE, ctr = kingui.control(),
     irls.control = list(), MCMCoptions = MCMCcontrol(),
-    update = NULL, useHsolnp = FALSE, exactHessian = FALSE,
-    ...)
+    update = NULL, useHsolnp = FALSE, ...)
 }
 \arguments{
   \item{mkinmodini}{A list of class

@@ -19,6 +19,11 @@ kin_mod <- function(P,inside=FALSE,plot=TRUE,plottitle,pnames0=NULL, ...)
    if(exists("pnames")) pnames0 <- pnames
    names(P) <- pnames0
   }
+  if("logging" %in% loadedNamespaces()){
+    logall <- TRUE
+  }else{
+    logall <- FALSE
+  }
   ## names(P) <- pnames
   ## P is the parameter vector with names.
   if(exists('calls')) calls <<- calls+1
@@ -164,8 +169,11 @@ kin_mod <- function(P,inside=FALSE,plot=TRUE,plottitle,pnames0=NULL, ...)
   names(Mod) <- c("name",  "time", "yMod")
   all <- merge(observed,Mod,by.x=c("name","time"),sort=FALSE)
   yMod <- all$yMod
-  
-  
+  bady <- is.nan(yMod)
+  if(sum(bady)>0){
+    yMod[bady]<-0
+    if(logall) logwarn("NaN values simulated from solving the ODE, which were replaced with 0s.")
+  }
   #############
   
   if(missing(plottitle)) plottitle <- NULL

@@ -40,6 +40,7 @@
 ##'                              maxIter = 10,
 ##'                            tolerance = 0.001))
 ##' @keywords Kinetic-Evaluations
+##' @import FME Rsolnp optimx BB minqa deSolve coda minpack.lm numDeriv
 ##' @export
 KinEval <- function(mkinmodini,
                     evalMethod=c('NLLS','IRLS','MCMC','directMLE'),
@@ -49,8 +50,7 @@ KinEval <- function(mkinmodini,
                     eigen = FALSE,
                     plotfit= TRUE, plotRes = FALSE, plottitle='',quiet = FALSE,
                     ctr=kingui.control(),irls.control=list(), MCMCoptions=MCMCcontrol(),
-                    update=NULL,useHsolnp=FALSE,exactHessian=FALSE,
-                    
+                    update=NULL,useHsolnp=FALSE,
                     ...)
 {
   ## Must be simple and clear this time. :)
@@ -73,6 +73,19 @@ KinEval <- function(mkinmodini,
   Hmethod1 <- ctr$Hmethod1
   Hmethod2 <- ctr$Hmethod2
   runTRR <- ctr$runTRR
+  if(ctr$runTRR4==FALSE) {
+    runTRR4 <- (length(mkinmodini$map)<5)
+    runTRR <- runTRR4
+    if(logall & !runTRR) loginfo("Number of compartments greater or equal to 5, turn off the option to run Trust Regrion Algorithm!")
+  }
+  calcJacob <- ctr$calcJacob
+  if(calcJacob){
+    exactHessian<-FALSE
+    exactJacob<-TRUE
+  }else{
+    exactHessian<-FALSE
+    exactJacob<-FALSE
+  }
   ## -----------------------------------
   ## Get the parametrization.
   inpartri <- mkinmodini$inpartri
@@ -144,6 +157,10 @@ KinEval <- function(mkinmodini,
       diffs[diffname] <- with(as.list(c(time,state, parms)),
                               eval(parse(text=mkinmodini$diffs[[box]])))
     }
+    ##https://stat.ethz.ch/pipermail/r-sig-dynamic-models/2010q2/000031.html
+    #bady <- (!is.finite(diffs))|(diffs<=0)
+    #if(logall & sum(bady)>0) logwarn("NaN values simulated from solving the ODE, which were replaced with 0s.")
+    #diffs[bady] <- 0 
     return(list(c(diffs)))
   }
   
@@ -218,7 +235,9 @@ KinEval <- function(mkinmodini,
       
       if(plotfit==TRUE) x11()
       f <- function(P,plotfit=FALSE,plotRes=FALSE,...){
-        if(plotfit==TRUE) res <- observed$value-kin_mod(P,inside=TRUE,...) else{
+        temp <- kin_mod(P,inside=TRUE,...)
+        
+        if(plotfit==TRUE) res <- observed$value-temp else{
           if(plotRes==TRUE) {
             res <- observed$value-kin_mod(P,inside=FALSE,plot=TRUE,plottitle=plottitle,...)
           }else res <- observed$value-kin_mod(P,inside=FALSE,plot=FALSE,...)
@@ -249,9 +268,10 @@ KinEval <- function(mkinmodini,
             if(logall==TRUE){
               loginfo("Some paramter estimates are at boundary, running an STIR to step aside the boundary problem.")
             }
-            print("It is not freezing, run a STIR to step aside the boundary problem. Please wait a while.")
+            print("It is not freezing, running a STIR to step aside the boundary problem. Please wait a while.")
             res00 <- res0
             res0 <- try(lsqnonlin(f,xstart=res0$par,l=lower,u=upper,plotfit=plotfit,plotRes=FALSE,...),silent=FALSE)
+            ##browser()
             if(class(res0)=="try-error"){
               res0 <- res00
               rm(res00)
@@ -264,11 +284,11 @@ KinEval <- function(mkinmodini,
               if(logall==TRUE){
                 loginfo("STIR step succeeded.")
               }
-            res0$par <- as.vector(res0$xcurr)
-            names(res0$par) <- pnames
-            res0$residuals <- res0$fvec
-            res0$hessian <- 2*t(res0$JACOB)%*%(res0$JACOB)
-          }
+              res0$par <- as.vector(res0$xcurr)
+              names(res0$par) <- pnames
+              res0$residuals <- res0$fvec
+              res0$hessian <- 2*t(res0$JACOB)%*%(res0$JACOB)
+            }
           }else{
             warning("Some Parameters on the boundary, please check the results 
                     and make sure they are the same as using other optimization algorithms 
@@ -344,6 +364,7 @@ KinEval <- function(mkinmodini,
           ERR <- errstd[as.character(observed$name)]
           observed$err <- ERR
           f1 <- function(P,...){
+            ##browser()
             res <- observed$value-kin_mod(P,plot=FALSE,...)
             res <- res/ERR
             res <- as.vector(res)
@@ -395,7 +416,7 @@ KinEval <- function(mkinmodini,
       }
       #### Now deal with hessian!!!!!!
       np <- length(res0$par)
-      ## browser()
+      ##browser()
       if(exactHessian) {
         ##browser()
         if(logall) loginfo("Calcluating Numerical Hessian using numDeriv.")
@@ -403,42 +424,46 @@ KinEval <- function(mkinmodini,
           res0$numH <- try(hessian(f2,res0$par))
         }
         res0$numCov <-  try(ginv(0.5*res0$numH), silent = TRUE)
-      }
-      res0$covar <-  try(solve(0.5*res0$hessian), silent = TRUE)
-      if(!is.numeric(res0$covar)){
-        ## try once again!
-       # browser()
-        if(logall==TRUE) {
-          loginfo("Convergence criteria met but final hessian is not positive definite. Trying generalized inverse.")
-        }
-        ## Make diagonal value 0 being NA instead of 
-        junk <- qr(res0$hessian)
-        
-        res0$covar <-  try(ginv(0.5*res0$hessian), silent = TRUE)
-        if(class(res0$covar)=="try-error"){
-          if(logall==TRUE) loginfo("Hessian not generalized invertable, please report the case!")
+        res0$covar <- res0$numCov
+      }else{
+        if(exactJacob){
           if(evalMethod=="NLLS") res0$covar <- calcCovar(res0$par,f=f,fval=res0$residuals,lb=lower,ub=upper,...)
           if(evalMethod=="IRLS") res0$covar <- calcCovar(res0$par,f=f1,fval=res0$residuals,lb=lower,ub=upper,...)
         }else{
-          if(junk$rank < length(res0$par)){
-            if(logall==TRUE) loginfo("Hessian is not full rank.")
-            junkR <- diag(res0$covar)
-            problem <- which(junkR < .Machine$double.eps)
-            res0$covar[problem,] <- NA
-            res0$covar[,problem] <- NA
+          res0$covar <-  try(solve(0.5*res0$hessian), silent = TRUE)
+          
+          if(!is.numeric(res0$covar)){
+            ## try once again!
+            #browser()
+            if(logall==TRUE) {
+              loginfo("Convergence criteria met but final hessian is not positive definite. Trying generalized inverse.")
+            }
+            ## Make diagonal value 0 being NA instead of 
+            junk <- qr(res0$hessian)
+            
+            res0$covar <-  try(ginv(0.5*res0$hessian), silent = TRUE)
+            if(class(res0$covar)=="try-error"){
+              if(logall==TRUE) loginfo("Hessian not generalized invertable, please report the case!")
+              if(evalMethod=="NLLS") res0$covar <- calcCovar(res0$par,f=f,fval=res0$residuals,lb=lower,ub=upper,...)
+              if(evalMethod=="IRLS") res0$covar <- calcCovar(res0$par,f=f1,fval=res0$residuals,lb=lower,ub=upper,...)
+            }else{
+              if(junk$rank < length(res0$par)){
+                if(logall==TRUE) loginfo("Hessian is not full rank.")
+                junkR <- diag(res0$covar)
+                problem <- which(junkR < .Machine$double.eps)
+                res0$covar[problem,] <- NA
+                res0$covar[,problem] <- NA
+              }
+            }
           }
+          
+          
         }
-        
-        if(!is.numeric(res0$covar)){
-          print("Not able to estimate the covariance matrix due to non-positive definite hessian")
-          ## browser()
-          ## if(evalMethod=="NLLS") res0$hessian <- optimHess(par=res0$par+0.01,fn=f)
-          ## if(evalMethod=="IRLS") res0$hessian <- optimHess(res0$par,fn=f1)
-          ## res0$covar <- try(solve(0.5*res0$hessian), silent = TRUE)
-          res0$covar <- matrix(data = NA, nrow = np, ncol = np)
-          ###### Calculate Hessian!!!  
-          ############################
-        }
+      }
+      if(!is.numeric(res0$covar)){
+        print("Not able to estimate the covariance matrix due to non-positive definite hessian")
+        res0$covar <- matrix(data = NA, nrow = np, ncol = np)
+        ############################
       }
       npar <- length(res0$par)
       nobs <- length(res0$fvec)
@@ -496,6 +521,10 @@ KinEval <- function(mkinmodini,
       ## Result Summary Section for the 2 newly implemented method##
       # -----------------------------------------
       ## We need to return some more information for summary and plotting in the GUI wrap.
+      if(!is.null(res0$message)) {
+        res0$stopmess <- res0$message
+        res0$message <- NULL
+      }
       fit <- res0
       fit$solution <- solution
       if (solution == "eigen") {
@@ -546,7 +575,7 @@ KinEval <- function(mkinmodini,
       observed1 <- observed
       observed1 <- observed[!(observed$time==0 & observed$value==0),]
       means <- aggregate(value ~ time + name, data = observed1, mean, na.rm=TRUE)##using the mean of repeated measurements.
-      
+      ##browser()
       ##errdata <- merge(means, predicted_long, observed,by = c("time", "name"), suffixes = c("_mean", "_pred",'_obs'))
       errdata <- merge(means, predicted_long, by = c("time", "name"), suffixes = c("_mean", "_pred"))
       ## !!!here is the problem!!! observed has two values, thus not be able to really merge!!!!
@@ -619,10 +648,17 @@ KinEval <- function(mkinmodini,
         ## ###
         
         for (obs_var in obs_vars) {
-          f_tot <- grep(paste(obs_var, "_",sep=''), names(fit$ff), value=TRUE)
-          f_exp <- grep(paste(obs_var, "to",obs_var,sep='_'), names(fit$ff), value=TRUE)
-          f_exp1 <- grep(paste(obs_var, "to",'sink',sep='_'), names(fit$ff), value=TRUE)
-          fit$ff[[paste(obs_var,'to', "sink", sep="_")]] = 1 - sum(fit$ff[f_tot])+sum(fit$ff[f_exp])+sum(fit$ff[f_exp1])
+          
+          if(mkinmodini$sinkT[obs_var]){
+            f_tot <- grep(paste(obs_var, "_",sep=''), names(fit$ff), value=TRUE)
+            f_exp <- grep(paste(obs_var, "to",obs_var,sep='_'), names(fit$ff), value=TRUE)
+            f_exp1 <- grep(paste(obs_var, "to",'sink',sep='_'), names(fit$ff), value=TRUE)
+            fit$ff[[paste(obs_var,'to', "sink", sep="_")]] = 1 - sum(fit$ff[f_tot])+sum(fit$ff[f_exp])+sum(fit$ff[f_exp1])
+            
+          }else{
+            ## when SINK is turned off by the user, then there is no need for calculation
+            fit$ff[[paste(obs_var,'to', "sink", sep="_")]] = 0
+          }
           type = names(mkinmodini$map[[obs_var]])[1]
           k1name <- paste("k1", obs_var,  sep="_")
           k2name <- paste("k2", obs_var,  sep="_")
@@ -954,7 +990,9 @@ KinEval <- function(mkinmodini,
       fit$inpartri <- inpartri
       fit$outpartri <- outpartri
       fit$optimmethod <- optimMethod
-      
+      fit$evalMethod <- evalMethod
+      fit$modelmess <- mkinmodini$modelmess
+      fit$trff <- mkinmodini$ff
       if(evalMethod=="MCMC")  class(fit) <- c('mcmckingui',"modMCMC") else{
         class(fit) <- c('kingui')
       }
@@ -1053,6 +1091,9 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version="2.2013.0
       diffs[diffname] <- with(as.list(c(time,state, parms)),
                               eval(parse(text=mkinmodini$diffs[[box]])))
     }
+    ##https://stat.ethz.ch/pipermail/r-sig-dynamic-models/2010q2/000031.html
+    #bady <- (!is.finite(diffs))|(diffs<=0)
+    #diffs[bady] <- 0 
     return(list(c(diffs)))
   }
   
@@ -1089,7 +1130,7 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version="2.2013.0
   observed1 <- observed[!(observed$time==0 & observed$value==0),]
   means <- aggregate(value ~ time + name, data = observed1, mean, na.rm=TRUE)
   ##using the mean of repeated measurements.!!!!!!!!!!!!!!!!!!!!!!!!!
-  ##browser()
+  
   ##errdata <- merge(means, predicted_long, observed,by = c("time", "name"), suffixes = c("_mean", "_pred",'_obs'))
   errdata <- merge(means, predicted_long, by = c("time", "name"), suffixes = c("_mean", "_pred"))
   ## !!!here is the problem!!! observed has two values, thus not be able to really merge!!!!
@@ -1440,7 +1481,9 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version="2.2013.0
   out$inpartri <- inpartri
   out$outpartri <- outpartri
   if(out$outpartri=="default") out$fixed0 <- out$fixed
+  out$evalMethod <- NULL
   out$mess <- "The fitting of the specified kinetic model is not done."
+  out$modelmess <- mkinmodini$modelmess
   class(out) <- "summary.mkinmod.full"
   return(out)
 }
@@ -1498,4 +1541,374 @@ calcCovar <- function(par,f,fval,lb,ub,...){
 ##' @author Zhenglei Gao
 atBoundary <- function(par,lower,upper){
   return(any(par==lower | par==upper))
+}
+
+##' Lists model equations, the chi2 error levels
+##' calculated according to FOCUS guidance (2006)
+##' and optionally the data, consisting of observed, predicted and residual values, the
+##' correlation matrix and so on.
+##'
+##' Expanded from \code{\link{summary.modFit}} and \code{\link{summary.mkinfit}}
+##' @title S3 summary method for class 'kingui'
+##' @method summary kingui
+##' @S3method summary kingui
+##' @param object A fitted object of class 'kingui' from the result of
+##' \code{\link{mkinfit.full}} or  \code{\link{IRLSkinfit.full}}
+##' @param data   If TRUE, include in the returned values a data frame containing the observed
+##' and predicted values with residuals and estimated standard deviations or weights.
+##' @param distimes If TRUE, DT50 and DT90 values should be included.
+##' @param ff  If TRUE, the formation fraction should be calculated from the estimated
+##' transformed parameters.
+##' @param cov If TRUE, parameter covariances should be calculated.
+##' @param version A version number indicating which version of the fit function has been used.
+##' @param ... Optional arguments passed to methods like 'print'
+##' @return The summary function returns a list of components from the results of the optimizat
+##' ion routine used.
+##' \item{par}{The fitted parameter values with corresponding standard error and t-test p
+##' values.}
+##' \item{version}{The version of function used.}
+##' \item{pnames}{Parameter names.}
+##' \item{diffs}{The differential equations used in the model.}
+##' \item{data}{A data frame that will be printed.}
+##' \item{start}{The starting values and bounds for the parameters.}
+##' \item{fixed}{The fixed values for model parameters. }
+##' \item{start0}{The starting values for the transformed parameters.}
+##' \item{fixed0}{The fixed values for the transformed parameters.}
+##' \item{errmin}{Chi2 error level and other related statistics for goodness-of-fit assessment.
+##' }
+##' \item{distimes}{The DT50 and DT90 values.}
+##' \item{ff}{The formation fractions calculated from the fitted parameters.}
+##' \item{outpartri}{Output parameterization.}
+##' \item{optimmethod}{Optimization method used in the final fitting step and in calculating
+##' Hessian. }
+##' \item{residuals}{The residuals.}
+##' \item{residualVariance}{The variance of the residuals.}
+##' \item{sigma}{The standard deviation of the residuals.}
+##' \item{df}{Degree of freedom for the residuals}
+##' \item{cov.unscaled}{Unscaled Covariance}
+##' \item{cov.scaled}{Scaled Covariance.}
+##' \item{info}{Information inherated from the fitting procedure}
+##' \item{niter}{Number of iterations.}
+##' \item{stopmess}{Warning message.}
+##' @author Zhenglei Gao
+##' @rdname summary.kingui
+summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov = FALSE,version="1.2011.922.1530",...) {
+  options(warn=-1)
+  param  <- object$par
+  pnames <- names(param)
+  p      <- length(param)
+  covar  <- object$covar
+  #rownames(covar) <- colnames(covar) <-pnames
+  rdf    <- object$df.residual
+  resvar <- object$ssr / rdf
+  se     <- sqrt(diag(covar) * resvar)
+  #browser()
+  lci <- param-qnorm(0.975)*se
+  uci <- param+qnorm(0.975)*se
+  names(se) <- pnames
+  tval      <- param / se
+  modVariance <- object$ssr / length(object$residuals)
+  
+  if (!all(object$start$lower >=0)) {
+    message <- "Note that the one-sided t-test may not be appropriate if
+      parameter values below zero are possible."
+        warning(message)
+  } else message <- "ok"
+  
+  param <- cbind(param, se, lci,uci, pt(tval, rdf, lower.tail = FALSE))
+  ## adding one line when there is fixed by KinGui object
+  pnames1 <- pnames
+  
+#  fid <- which(object$fixed$by=='KinGui')
+#   if(length(fid)>0){
+#     ## There is some reason that KinGui fixed the parameters!!!!!!!
+#     
+#     nfid <- length(fid)
+#     param <- rbind(param,(cbind(object$fixed$value[fid],matrix(NA,nfid,4))))
+#     pnames1 <- c(pnames1, rownames(object$fixed)[fid])
+#   }
+  dimnames(param) <- list(pnames1, c("Estimate", "Std. Error",'Lower CI','Upper CI',
+                                     "Pr(>t)"))
+  ##browser()
+  if(cov)
+    ans <- list(residuals = object$residuals,
+                residualVariance = resvar,
+                sigma = sqrt(resvar),
+                modVariance = modVariance,
+                df = c(p, rdf), cov.unscaled = covar,
+                cov.scaled = covar * resvar,
+                info = object$info, niter = object$iterations,
+                stopmess = message,
+                par = param,version=version,pnames=pnames)
+  else
+    ans <- list(residuals = object$residuals,
+                residualVariance = resvar,
+                sigma = sqrt(resvar),
+                modVariance = modVariance,
+                df = c(p, rdf),
+                info = object$info, niter = object$iterations,
+                stopmess = message,
+                par = param,version=version,pnames=pnames)
+  
+  ans$diffs <- object$diffs
+  if(data) {
+    if(!is.null(object$data0)) ans$data <- object$data0 else ans$data <- object$data
+  }
+  ans$start <- object$start
+  ans$fixed <- object$fixed
+  ans$start0 <- object$start0
+  ans$fixed0 <- object$fixed0
+  ans$errmin <- object$errmin
+  if(distimes) ans$distimes <- object$distimes
+  if(ff) {## of course we should always report formation fractions.
+    ans$ff <- object$ff ## if report formation fractions.
+    ##browser()
+    fixed <- object$fixed[,1]
+    names(fixed) <- rownames(object$fixed)
+    if(length(object$trff)>0){
+      tff <- MCstd(mu=object$par,sigma=se,transformations=object$trff,fixed=fixed,N=10000)
+      ext <- setdiff(names(ans$ff),rownames(tff))
+      ans$ff <- rbind(formatC(tff,digits=4,format='f'),cbind(formatC(ans$ff[ext],digits=4),matrix("",nrow=length(ext),ncol=3)))
+    }else{
+      ans$ff <- cbind(formatC(ans$ff,digits=4),matrix("",nrow=length(ans$ff),ncol=3))
+      colnames(ans$ff) <- c("Estimate", "Std. Error",'Lower CI','Upper CI')
+    }
+    
+  }
+  ans$outpartri <- object$outpartri
+  ans$optimmethod <- object$optimmethod
+  ans$evalMethod <- object$evalMethod
+  ans$mess <- object$mess
+  ans$modelmess <- object$modelmess
+  class(ans) <- c('summary.kingui', "summary.modFit")
+  return(ans)
+}
+######################
+##' Formatting a data frame by controlling the number of digits after the decimal point
+##'
+##' If the data frame contains numeric columns, formmating those columns.
+##' @title Formating a data frame
+##' @param x A data frame
+##' @param digits How many digits should be printed after the decimal point.
+##' @param ... Other parameters to be passed into  \code{\link{format}}
+##' @return A formatted data frame
+##' @author Zhenglei Gao
+##' @keywords format
+##' @export
+myformat <- function(x,digits=4,...)
+{
+  ## x is a data frame
+  for(i in 1:ncol(x))
+  {
+    if(is.numeric(x[,i]))
+    {
+      x[,i] <- formatC(x[,i],digits=digits,format='f')
+    }else x[,i] <- format(x[,i],digits=digits,...)
+  }
+  return(x)
+}
+
+##' Print method for \code{\link{summary.kingui}}
+##'
+##' Expanded from \code{\link{print.summary.modFit}} and \code{\link{print.summary.mkinfit}}
+##' @title Print method for \code{\link{summary.kingui}}
+##' @method print summary.kingui
+##' @param x An object of class \code{summary.kingui}
+##' @param digits How many digits should be printed after the decimal point.
+##' @param detailed Ignore for now.
+##' @param ... Other parameters to be passed into \code{\link{summary.kingui}}
+##' @return \code{NULL}
+##' @author Zhenglei Gao
+##' @S3method print summary.kingui
+##' @rdname print.summary.kingui
+print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
+  
+  cat(paste("KineticEval Package Version:",packageVersion("KineticEval"),"\n"))
+  cat(paste('Version:',x$version,'\n'))
+  
+  cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
+  cat(paste("\nMethod:",x$evalMethod,"\n"))
+  if(x$outpartri=='water-sediment')  cat("\nStudy:Water-Sediment\n")
+  
+  xx <- x[["diffs"]]
+  
+  cat("\nOptimization Algorithms Used:\n")
+  print(x$optimmethod)
+  cat("\n##Comment:\n")
+  print(ifelse(is.null(x$mess),"",(x$mess)))
+  cat("\nEquations:\n")
+  for(i in 1:length(xx)) print(noquote(as.character(xx[i])))
+  df  <- x$df
+  rdf <- df[2]
+  
+  cat("\nStarting values for optimised parameters:\n")
+  if(x$outpartri=='default') print(x$start0) else print(x$start)
+  
+  cat("\nFixed parameter values:\n")
+  if(x$outpartri=='default') {
+    if(length(x$fixed$value) == 0) cat("None\n")
+    else print(x$fixed)
+  }else{
+    if(length(x$fixed$value) == 0) cat("None\n")
+    else print(x$fixed)
+  }
+  
+  fid <- which(x$fixed$by=='KinGUII')
+  if(length(fid)>0){
+    ## There is some reason that KinGui fixed the parameters!!!!!!!
+    #cat("\nWarning:Parameters fixed by KinGUII. Please check your log file and model set up. One or more of the SINKs are turned off but you did not fix the formation fractions to be 1.\n")
+    cat("\nWarning: One or more compartments without sink. Parameters fixed by KinGUII.\n")
+    if(!is.null(x$modelmess)) {
+      cat("\nModel Message:\n")
+      for(i in 1:length(x$modelmess)) cat(c(x$modelmess[i],"\n"))
+    }
+  }
+  
+  
+  cat("\nOptimised parameters:\n")
+  printCoefmat(x$par, digits = digits, ...)
+  
+  cat("\nResidual standard error:",
+      format(signif(x$sigma, digits)), "on", rdf, "degrees of freedom\n")
+  
+  printff <- !is.null(x$ff)
+  if(printff){
+    cat("\nEstimated formation fractions:\n")
+    print(as.data.frame(x$ff), digits=digits,...)
+  }
+  
+  
+  
+  
+  cat("\nChi2 error levels in percent :\n")
+  print(x$errmin[,1:3], digits=digits,...)
+  
+  if(any(is.nan(x$errmin[,1]))){
+    cat("\nNaNs in Chi2 errors: Replicates should be averaged before the calculation of the Chi2 err value. However, there are fewer time points compared to the number of parameters.Degree of freedom is smaller than 0, therefore no Chi2 error can be calculated.\n")
+  }
+  
+  printdistimes <- !is.null(x$distimes)
+  if(printdistimes){
+    cat("\nEstimated disappearance times:\n")
+    print(x$distimes, digits=digits,...)
+  }
+  
+  
+  
+  
+  
+  printcor <- (!is.null(x$cov.unscaled))
+  if (printcor){
+    cat("\nAdditional Statistics:\n")
+    print(x$errmin[,4:ncol(x$errmin)], digits=digits,...)
+    Corr <- try(cov2cor(x$cov.unscaled),silent=TRUE)
+    if(!is.numeric(Corr))
+    {
+      warning('Covariance matrix cannot be calculated.')
+      np <- nrow(x$cov.unscaled)
+      Corr <- matrix(data = NA, nrow = np, ncol = np)
+    }
+    rownames(Corr) <- colnames(Corr) <- x$pnames#rownames(x$par)
+    cat("\nParameter correlation:\n")
+    print(Corr, digits = digits, ...)
+  }
+  
+  
+  printdata <- !is.null(x$data)
+  if (printdata){
+    cat("\nData:\n")
+    print(myformat(x$data, digits = digits, scientific=F,...), row.names = FALSE)
+    #sprintf("%.4f",x$data)
+  }
+  
+  invisible(x)
+}
+########################################
+## utility functions
+########################################
+
+##' Calculating the Model Efficiency according to Focus Kinetics Guidelines.
+##'
+##' For EF>0, the values gives an indication of fraction of the total variance of the data
+##' that can be explained by the model.
+##' @title Calculating the Model Efficiency
+##' @param o Observed values.
+##' @param c Predicted values using model.
+##' @return Model efficiency(EF) ranges from negative infinity to 1.
+##' @author Zhenglei Gao
+##' @export
+EF <- function(o,c)
+{
+  naid <- !is.na(o)## Remove all the NA values
+  c <- c[naid]
+  o <- o[naid]
+  if(length(c)>0) out <- 1-(sum((c-o)^2))/(sum((o-mean(o))^2)) else out <- NA
+  out
+}
+##' Calculating the scaled root mean squared error according to Focus Kinetics Guidelines.
+##'
+##'
+##' @title Calculating the root mean squared error.
+##' @param obs Observed values.
+##' @param pred Predicted values using model.
+##' @return The root mean squared error.
+##' @author Zhenglei Gao
+##' @export
+rmse <- function(obs, pred) sqrt(mean((obs-pred)^2,na.rm=TRUE))
+
+##' This function calculates the smallest relative error resulting
+##' in passing the chi-squared test as defined in the FOCUS kinetics
+##' report from 2006.
+##'
+##'  This function is used internally by \code{\link{mkinfit.full}},
+##' \code{\link{IRLSkinfit.full}}, and  \code{\link{mcmckinfit.full}}.
+##' @title Calculate model error at which chi-square test is passed.
+##' @usage chi2err(errdata, n.parms, errobserved, alpha = 0.05)
+##' @param errdata  A data frame with mean observed values in column named 'value_mean'
+##' and predicted values in column 'value_pred'.
+##' @param n.parms The number of optimized parameters to be taken into account for
+##' the data series.
+##' @param errobserved A data frame with the true observed values instead of the
+##' mean values for repeated measurements.
+##' @param alpha The confidence level chosen for the chi-squared test.
+##' @return A list of component to assess the model goodness-of-fit including:
+##' \item{err.min}{Chi2 error level}
+##' \item{n.optim}{Number of parameters}
+##' \item{df}{Degree of freedom}
+##' \item{RMSE}{The root mean squared error.}
+##' \item{EF}{Model efficiency}
+##' \item{R2}{Coefficient of determination}
+##' @author Zhenglei Gao
+##' @export
+chi2err <- function(errdata, n.parms, errobserved,alpha = 0.05)
+{
+  if("logging" %in% loadedNamespaces()){
+    logall <- TRUE
+  }else{
+    logall <- FALSE
+  }
+  means.mean <- mean(errdata$value_mean, na.rm = TRUE)
+  df = length(errdata$value_mean) -sum(is.na(errdata$value_mean)) - n.parms
+  C <- errdata$value_pred
+  O <- errdata$value_mean
+  b <-  sum((C-O)^2,na.rm=TRUE)
+  a <- b/(means.mean)^2
+  #a <- sum((C-O)^2/(means.mean)^2,na.rm=TRUE)
+  if(df<=0){
+    if(logall) logwarn("Replicates should be averaged before the calculation of the Chi2 err value. 
+                       However, there are fewer time points compared to the number of parameters.
+                       Degree of freedom is smaller than 0.")
+    err.sig <- NaN
+    err.min <- NaN
+  }else{
+    err.sig <-sqrt(b/qchisq(1-alpha,df))
+    err.min <- sqrt(1/qchisq(1-alpha,df)*a)
+  }
+  
+  O1 <- errobserved$value_obs##O1 <- errdata$value_obs
+  C1 <- errobserved$value_pred#########
+  ef <- EF(O1,C1)
+  RMSE <- rmse(O1,C1)
+  R2 <- cor(O1,C1,use='na.or.complete')^2
+  return(list(err.min = 100*err.min, n.optim = n.parms, df = df,err.sig=err.sig,RMSE=RMSE,EF=ef,R2=R2))
 }

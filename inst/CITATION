@@ -1,0 +1,14 @@
+bibentry("Manual",
+		title="KineticEval: Kinetic Evaluations by NLLS, IRLS and MCMC",
+		author="Zhenglei Gao",
+		year="2014",
+		note="(Version 1.0-37)",
+		url="http://zhenglei-gao.github.io/KineticEval/",
+
+		textVersion =
+		paste("Gao, Z. (2014). ",
+				"KineticEval: Kinetic Evaluations by NLLS, IRLS and MCMC (Version 1.0-37). ",
+				"Available from http://zhenglei-gao.github.io/KineticEval/",
+				sep=""),
+
+		mheader = "To cite KineticEval in publications use:")

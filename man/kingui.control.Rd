@@ -8,7 +8,8 @@ evaluations using NLS and IRLS.}
     rtol = 1e-10, rhobeg = 0.05, iprint = 1, trace = 0,
     goMarq = 0, delta = 1e-06, rho = 1, submethod = "Port",
     Hmethod1 = "LM", Hmethod2 = "L-BFGS-B", quiet.tol = 1,
-    automate = TRUE, ...)
+    automate = TRUE, calcJacob = TRUE, runTRR4 = FALSE,
+    ...)
 }
 \arguments{
   \item{method}{The method to be used, one of "Rsolnp",
@@ -63,6 +64,9 @@ evaluations using NLS and IRLS.}
   \item{quiet.tol}{The improvement level at which the
   objective function(cost value) and the plot should be
   updated and reported.}
+
+  \item{runTRR4}{if the number of compartments exceeds 4 in
+  the system, do not run TRR when reach boundary}
 
   \item{...}{Other characteristics of different optimizer
   for the users to play with.}

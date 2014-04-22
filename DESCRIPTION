@@ -1,72 +1,37 @@
 Package: KineticEval
 Type: Package
 Title: Kinetic Evaluations by NLLS, IRLS and MCMC
-Version: 1.0-17
-Date: 2012-03-14
-Author: Zhenglei Gao, Horatio Meyer and Walter Schmitt
-Maintainer: Zhenglei Gao <zhenglei.gao@bayer.com>
+Author: Zhenglei Gao <zhenglei.gao@gmail.com>
+Maintainer: Zhenglei Gao <zhenglei.gao@gmail.com>
+Depends: R (>= 2.15), mkin,minqa
 Description: This package is developed based on the R package `mkin`. It is
     used by the KinGUI v2.1. The package is used to determine kinetic
-    parameters from results of environmental fate studies, e.g. aerobic soil
-    degradation, by fitting respective kinetic models to the observed data.The
-    package allows the choice between different optimization algorithms. In
-    particular the estimation of parameter confidence intervals is much
-    improved/corrected as compared to other commonly used evaluation softwares
-    by providing the methods Iteratively Reweighted Least Squares (IRLS) and
-    Markov Chain Monte Carlo (MCMC).
-BugReports: https://github.com/zhenglei-gao/KineticEval/issues
-Depends:
-    R (>= 2.15),
-    mkin
-Imports:
-    FME,
-    Rsolnp,
-    optimx,
-    BB,
-    minqa,
-    deSolve,
-    coda,
-    minpack.lm,
-    numDeriv
-Suggests:
-    MASS,
-    ucminf,
-    Rcgmin,
-    Rvmmin,
-    setRNG
-License: GPL (>= 2)
-Collate:
-    'kingraph.r'
-    'kingui.control.r'
-    'kinplot.r'
-    'mcmckinfit.full.r'
-    'mkinmod.full.r'
-    'FOCUS2006A.r'
-    'FOCUS2006B.r'
-    'FOCUS2006C.r'
-    'FOCUS2006D.r'
-    'KineticEval-package.r'
-    'list2ascii.r'
-    'modCost.r'
-    'modFit1.r'
-    'IRLSkinfit.full.r'
-    'mkinfit.full.r'
-    'BCS1.r'
-    'BCS2.r'
-    'andrew.r'
-    'compare_multi_kinmod.r'
-    'kin_mod_cost.r'
-    'update_kinmod.r'
-    'kin_mod.r'
-    'IRLSkinfit.full.0.r'
-    'kin_mod_nls.r'
-    'KinEval.r'
-    'TRR.r'
-    'Fit_Schaefer.r'
-    'ex1.r'
-    'ex1_a.r'
-    'ex2.r'
-    'versioninfo.r'
-    'solution.r'
-    'erroroutput.r'
-Packaged: 2013-03-17 23:30:48 UTC; z.gao
+    parameters from results of environmental fate studies, e.g. aerobic
+    soil degradation, by fitting respective kinetic models to the
+    observed data.The package allows the choice between different
+    optimization algorithms. In particular the estimation of parameter
+    confidence intervals is much improved/corrected as compared to
+    other commonly used evaluation softwares by providing the methods
+    Iteratively Reweighted Least Squares (IRLS) and Markov Chain Monte
+    Carlo (MCMC).
+License: GPL (>= 3)
+Encoding: UTF-8
+LazyLoad: yes
+BugReports: http://github.com/zhenglei-gao/KineticEval/issues
+URL: http://zhenglei-gao.github.io/KineticEval/
+Imports: FME,Rsolnp,optimx,BB,logging,deSolve,coda,minpack.lm,numDeriv
+Suggests: MASS,ucminf,Rcgmin,Rvmmin,setRNG
+Authors@R: c(person(given="Zhenglei", family="Gao",
+        email="zhenglei.gao@gmail.com", role=c("aut", "cre")))
+Version: 1.0-37
+Date: 2014-04-17
+Collate: 'andrew.r' 'BCS1.r' 'BCS2.r' 'compare_multi_kinmod.r'
+        'erroroutput.r' 'ex1.r' 'ex1_a.r' 'ex2.r' 'Fit_Schaefer.r'
+        'FOCUS2006A.r' 'FOCUS2006B.r' 'FOCUS2006C.r' 'FOCUS2006D.r'
+        'IRLSkinfit.full.0.r' 'IRLSkinfit.full.r' 'kin_mod.r'
+        'kin_mod_cost.r' 'kin_mod_nls.r' 'KineticEval-package.r'
+        'KinEval.r' 'kingraph.r' 'kingui.control.r' 'kinplot.r'
+        'list2ascii.r' 'mcmckinfit.full.r' 'MCstd.r' 'mkinfit.full.r'
+        'mkinmod.full.r' 'modCost.r' 'modFit1.r' 'solution.r' 'TRR.r'
+        'update_kinmod.r' 'versioninfo.r'
+Packaged: 2014-04-17 12:49:31 UTC; gbbfx

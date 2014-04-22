@@ -1,0 +1,8 @@
+simple_KinEval simple kinetic Evaluation examples
+Complex_Model Complex kinetic evaluation example
+WaterSediment_TRR Water-Sediment settings example using TRR
+MCMC example using MCMC method
+Scan00_LM_DFOP_observed an example to compare the results using and not using exact Jacobian
+Scan01_LM_DFOP_observed DFOP example 1
+Scan02_LM_DFOP_observed DFOP example 2
+Scan03_LM_DFOP_observed DFOP example 3

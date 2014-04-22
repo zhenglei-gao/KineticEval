@@ -960,7 +960,7 @@ mcmckinfit.full <- function (mkinmodini,eigen=FALSE,ctr=kingui.control(quiet.tol
 ##' @S3method summary mcmckingui
 ##' @rdname summary.mcmckingui
 summary.mcmckingui <- function (object, remove = NULL, data=TRUE,distimes=TRUE,ff=TRUE,version="1.2011.922.1530",...) {
-    options(warn=-1)
+  options(warn=-1)
   mcmc <- object$pars
   ### drop more burnin period.
   if (! is.null (remove)) {
@@ -1053,7 +1053,20 @@ summary.mcmckingui <- function (object, remove = NULL, data=TRUE,distimes=TRUE,f
     ans$errmin <- object$errmin
     ans$optimmethod <- object$optimmethod
     if(distimes) ans$distimes <- object$distimes
-    if(ff) ans$ff <- object$ff
+    if(ff) {## actually always report ff.
+      ans$ff <- object$ff
+      fixed <- object$fixed[,1]
+      names(fixed) <- rownames(object$fixed)
+      if(length(object$trff)>0){
+        tff <- MCMCstd(mu=object$pars,transformations=object$trff,fixed=fixed)
+        ext <- setdiff(names(ans$ff),rownames(tff))
+        ans$ff <- rbind(formatC(tff,digits=4,format='f'),cbind(formatC(ans$ff[ext],digits=4),matrix("",nrow=length(ext),ncol=3)))
+      }else{
+        ans$ff <- cbind(formatC(ans$ff,digits=4),matrix("",nrow=length(ans$ff),ncol=3))
+        colnames(ans$ff) <- c("Estimate", "Std. Error",'Lower CI','Upper CI')
+      }
+
+    }
     ans$outpartri <- object$outpartri
     class(ans) <- c('summary.mcmckingui')
     options(warn=0)
@@ -1074,7 +1087,7 @@ summary.mcmckingui <- function (object, remove = NULL, data=TRUE,distimes=TRUE,f
 ##' @S3method print summary.mcmckingui
 ##' @rdname print.summary.mcmckingui
 print.summary.mcmckingui <- function(x,digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
-   cat(paste("KineticeEval Package Version:",packageVersion("KineticEval"),"\n"))
+   cat(paste("KineticEval Package Version:",packageVersion("KineticEval"),"\n"))
     cat(paste('Version:',x$version,'\n'))
     ##cat('\nR version: 2.12.2 (2011-02-25)\n ')
     cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))

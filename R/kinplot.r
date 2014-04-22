@@ -113,7 +113,7 @@ if(is.null(name)){
     points(subset(fit$data, variable == obs_var, c(time, observed)),
     pch = pch_obs[obs_var], col = col_obs[obs_var])
   }
-  matlines(out_transformed$time, out_transformed[-1])
+  matlines(out_transformed$time, out_transformed[-1],lwd=2.5)
   if (legend == TRUE) {
     legend("topright", inset=c(0.05, 0.05), legend=names(fit$map),
       col=col_obs, pch=pch_obs, lty=1:length(pch_obs))

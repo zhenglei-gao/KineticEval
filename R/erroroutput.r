@@ -75,6 +75,12 @@ KinReport <- function(mod,Fit,version = "2.2013.0923.1534",filename,exactHessian
         }
       }else{
         loginfo("Graph data of the fitted object (.kgg file) is generated.")
+        ## Generating the combined plot!
+        win.metafile(paste0(filename,".fitplot.wmf"),pointsize=12)
+        par(lwd=1)
+        kinplot(Fit)
+        dev.off()    
+        
       }
       if("mcmckingui" %in% class(Fit)){
         ## MCMC results need extra Fit plot!

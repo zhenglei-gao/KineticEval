@@ -129,6 +129,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
  state.upper <- vector()
  diffs <- vector()
  ff <- vector()
+ sinkT <- sapply(spec,function(x) x$sink)
  residue <- NULL
  data0 <- NULL
  weightmat <- NULL
@@ -184,6 +185,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
  ## Establish list of differential equations. The compartments/compound has passed the error checks and are completed with paramters and initial values and new_parms information but not new_ff. These functions are the same for both parametrizations, the differences are taken care of in the completeCompound function. ##########
  for (varname in obs_vars)
  {
+   
    if(varname==parentname)  {
      if(spec[[varname]]$M0$fixed==1 || is.null(spec[[varname]]$M0)) fixed_initials <- c(fixed_initials,varname)## add fixed initials
      state.ini <- c(state.ini,spec[[varname]]$M0$ini)
@@ -250,7 +252,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
    parms.lower <- c(parms.lower, spec[[varname]]$new_parms.lower)
    parms.upper <- c(parms.upper, spec[[varname]]$new_parms.upper)
    fixed_parms <- c(fixed_parms, spec[[varname]]$new_fixed)
-   fixed_flag <- rep('user',length(fixed_parms))
+   fixed_flag <- c(fixed_flag,spec[[varname]]$new_fixed_flag)
    names(new_diffs) <- new_boxes
    diffs <- c(diffs, new_diffs)
    if(spec[[varname]]$type %in% c("SFO") && mat) {
@@ -273,7 +275,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
    ##start <-data.frame(initial=parms.ini[start_parms],lower=parms.lower[start_parms],upper=parms.upper[start_parms])
    ##rownames(start) <- start_parms
  }
- 
+ modelmess <- NULL
  ## ##################################################
  ## Transfer between compartments ## XXXXXXXXXXX TODO XXXXXXXXXXXX
  for (varname in obs_vars) {
@@ -360,6 +362,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
              ## IF NO SINK, then fixed parms should be adding 1, and the last tranformed formation fraction should be fixed at 1!!!!!!!!!!!!
              #browser()
              if(spec[[varname]]$sink==FALSE){
+               ## browser()
                ## special care needed, adding a flag for later usage!!!
                if(index==nto){
                  if(spec[[varname]]$FF$fixed[index]==0){
@@ -370,10 +373,13 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
                    ## in FF being 1, instead of fixing any original formation
                    ## fractions.
                    fixed_parms <- c(fixed_parms,fraction_to_target)
-                   fixed_flag <- c(fixed_flag,'KinGui')
+                   fixed_flag <- c(fixed_flag,'KinGUII')
+                   modelmess <- c(modelmess,paste("Formation fraction from",varname,"to",target, "is fixed by KinGUII at", noquote("\"1-all formation fractions to other compartments\"")))
+                   if(logall) logwarn(paste0("FF fractions fixed by KinGUII. Please check your model set up. SINK is turned off for ", varname, ", but you did not fix the formation fractions to be summed to 1."))
                  }else{
                    warning('You need to switch the order if the formation fraction for the last to compartment is fixed at a certain value but you turn off the sink compartment and you have multiple to compartments!')
-                   fixed_flag[length(fixed_flag)] <- 'KinGui'
+                   # fixed_flag[length(fixed_flag)] <- 'KinGUII'
+                   if(logall) logwarn("Fixed formation fractions have to be in the beginnig of the to compartments vector if you have multiple compartments!")
                    
                  }
                  parms.ini[length(parms.ini)] <-1
@@ -409,22 +415,22 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
              }
              ff[paste(origin_box,'to', target, sep="_")] = fraction_really_to_target
              if(spec[[varname]]$type!="DFOP"){
-			 diffs[[target_box]] <- paste(diffs[[target_box]], "+",
-                                          fraction_really_to_target, "*",
-                                          spec[[varname]]$nonlinear_term) 
-			}
-			if(spec[[varname]]$type=="DFOP"){
-				if(varname!= parentname){
-					diffs[[target_box]] <- paste(diffs[[target_box]], "+",
-                                          fraction_really_to_target, "*(",
-                                          spec[[varname]]$DFOP_terms[1],"+",spec[[varname]]$DFOP_terms[2],")") 					  
-				}else{## when the origin is the parent substance
-					diffs[[target_box]] <- paste(diffs[[target_box]], "+",
-                                          fraction_really_to_target, "*",
-                                          spec[[varname]]$nonlinear_term) 
-				}					
-										
-			}
+               diffs[[target_box]] <- paste(diffs[[target_box]], "+",
+                                            fraction_really_to_target, "*",
+                                            spec[[varname]]$nonlinear_term) 
+             }
+             if(spec[[varname]]$type=="DFOP"){
+               if(varname!= parentname){
+                 diffs[[target_box]] <- paste(diffs[[target_box]], "+",
+                                              fraction_really_to_target, "*(",
+                                              spec[[varname]]$DFOP_terms[1],"+",spec[[varname]]$DFOP_terms[2],")") 					  
+               }else{## when the origin is the parent substance
+                 diffs[[target_box]] <- paste(diffs[[target_box]], "+",
+                                              fraction_really_to_target, "*",
+                                              spec[[varname]]$nonlinear_term) 
+               }					
+               
+             }
              parms <- c(parms, fraction_to_target)
              parms.ini <- c(parms.ini, f[index])
              if(spec[[varname]]$FF$fixed[index]==1) {
@@ -443,10 +449,10 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
                    ## in FF being 1, instead of fixing any original formation
                    ## fractions.
                    fixed_parms <- c(fixed_parms,fraction_to_target)
-                   fixed_flag <- c(fixed_flag,'KinGui')
+                   fixed_flag <- c(fixed_flag,'KinGUII')
                  }else{
                    warning('You need to switch the order if the formation fraction for the last to compartment is fixed at a certain value but you turn off the sink compartment and you have multiple to compartments!')
-                   fixed_flag[length(fixed_flag)] <- 'KinGui'
+                   #fixed_flag[length(fixed_flag)] <- 'KinGui'
                  }
                  parms.ini[length(parms.ini)] <-1
                }
@@ -483,7 +489,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
                                              paste("k", origin_box, sep="_"),'*',origin_box,sep="")
            }
            if(spec[[varname]]$type %in% c("FOMC",  "HS")){
-		   #browser()
+             #browser()
              diffs[[target_box[1]]] <- paste(diffs[[target_box[1]]], "+",
                                              fraction_really_to_target, "*g_",target,"*",
                                              spec[[varname]]$nonlinear_term,sep="")
@@ -491,25 +497,25 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
                                              fraction_really_to_target, "*(1-g_",target,")*",
                                              spec[[varname]]$nonlinear_term,sep="")
            }
-		   if(spec[[varname]]$type %in% c("DFOP")){
-			if(varname==parentname){
-				diffs[[target_box[1]]] <- paste(diffs[[target_box[1]]], "+",
-                                             fraction_really_to_target, "*g_",target,"*",
-                                             spec[[varname]]$nonlinear_term,sep="")
-				diffs[[target_box[2]]] <- paste(diffs[[target_box[2]]], "+",
-                                             fraction_really_to_target, "*(1-g_",target,")*",
-                                             spec[[varname]]$nonlinear_term,sep="")
-        
-			}else{
-				diffs[[target_box[1]]] <- paste(diffs[[target_box[1]]], "+",
-                                             fraction_really_to_target, "*g_",target,"*(",
-                                             spec[[varname]]$DFOP_terms[1],"+",spec[[varname]]$DFOP_terms[2],")",sep="")
-				diffs[[target_box[2]]] <- paste(diffs[[target_box[2]]], "+",
-                                             fraction_really_to_target, "*(1-g_",target,")*(",
-                                             spec[[varname]]$DFOP_terms[1],"+",spec[[varname]]$DFOP_terms[2],")",sep="")
-				 }
+           if(spec[[varname]]$type %in% c("DFOP")){
+             if(varname==parentname){
+               diffs[[target_box[1]]] <- paste(diffs[[target_box[1]]], "+",
+                                               fraction_really_to_target, "*g_",target,"*",
+                                               spec[[varname]]$nonlinear_term,sep="")
+               diffs[[target_box[2]]] <- paste(diffs[[target_box[2]]], "+",
+                                               fraction_really_to_target, "*(1-g_",target,")*",
+                                               spec[[varname]]$nonlinear_term,sep="")
+               
+             }else{
+               diffs[[target_box[1]]] <- paste(diffs[[target_box[1]]], "+",
+                                               fraction_really_to_target, "*g_",target,"*(",
+                                               spec[[varname]]$DFOP_terms[1],"+",spec[[varname]]$DFOP_terms[2],")",sep="")
+               diffs[[target_box[2]]] <- paste(diffs[[target_box[2]]], "+",
+                                               fraction_really_to_target, "*(1-g_",target,")*(",
+                                               spec[[varname]]$DFOP_terms[1],"+",spec[[varname]]$DFOP_terms[2],")",sep="")
+             }
            }
-		   
+           
            parms <- c(parms, fraction_to_target)
            parms.ini <- c(parms.ini, f[index])
            if(spec[[varname]]$FF$fixed[index]==1) {
@@ -665,7 +671,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
  
  if(!is.null(weightmat)) colnames(weightmat) <- obs_vars
  if(!is.null(start)) start$type <-  rep("deparm", nrow(start))
- model <- list(diffs = diffs, parms = parms, map = map,parms.ini=parms.ini,state.ini=state.ini,state.ini.orig=state.ini.orig,lower=lower,upper=upper,fixed_parms=fixed_parms,fixed_flag=fixed_flag,fixed_initials=fixed_initials,residue=as.data.frame(residue),data0=as.data.frame(data0),weightmat=as.data.frame(weightmat),start=start)
+ model <- list(diffs = diffs, parms = parms, map = map,parms.ini=parms.ini,state.ini=state.ini,state.ini.orig=state.ini.orig,lower=lower,upper=upper,fixed_parms=fixed_parms,fixed_flag=fixed_flag,fixed_initials=fixed_initials,residue=as.data.frame(residue),data0=as.data.frame(data0),weightmat=as.data.frame(weightmat),start=start,modelmess=modelmess)
  
  ## Create coefficient matrix if appropriate
  if (mat) {
@@ -699,6 +705,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
  class(model) <- "mkinmod.full"
  model$inpartri <- inpartri
  model$outpartri <- outpartri
+ model$sinkT <- sinkT
  invisible(model)
 }
 ##' Auxiliary function including error checks for \code{mkinmod.full}
@@ -752,9 +759,20 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
   if(is.null(compound$to))
   {
     if(compound$sink==FALSE){
-      warning('no to compartments, sink cannot be FALSE')
+      warning('no to compartments, This has to be a metabolite and a SINK at the same time!')
       if(logall==TRUE) logwarn(paste("No sink defined for", varname, ". KinGUII fixed the degradation rate(s) to sink being 0." ))
-      compound$sink <- TRUE
+      #compound$sink <- TRUE
+      if(compound$type=="SFO") compound$k <- list(ini=0,fixed=1,lower=0,upper=Inf,flag="KinGUII")
+      if(compound$type=="DFOP") {
+        compound$k1 <- list(ini=0,fixed=1,lower=0,upper=Inf,flag="KinGUII")
+        compound$k2 <- list(ini=0,fixed=1,lower=0,upper=Inf,flag="KinGUII")
+        compound$g <- list(ini=1,fixed=1,lower=0,upper=Inf,flag="KinGUII")
+        
+        }
+      if(compound$type=="HS" | compound$type=="FOMC"){
+        if(logall==TRUE) logerror(paste("No sink defined for", varname, "And for Metabolite HS and FOMC are not defined." ))
+        stop(paste("No sink defined for", varname, "And for Metabolite HS and FOMC are not defined." ))
+      }
     }
   }else{### in case there are compartments that the compound transform to
     ##        ## shall we make the FF or kFF's into the new_parms component of the complete compound property list? XXXXXXXXXXXXXXXX TODO XXXXXXXXXXXXXXXXXX
@@ -764,6 +782,20 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         if(is.null(compound$FF)){
           compound$FF=list(ini=rep(0.1,n),fixed=rep(0,n),lower=rep(0,n),upper=rep(1,n))
           ## if sink==FALSE needs special care, which is done in the mkinmod.full function
+        }else{
+          ## if there are fixed formation fractions has to be in the first few
+          ffind1 <- which(compound$FF$fixed==1)
+          if(length(ffind1)>=1){
+            if(n>1){
+              ffind2 <- which(compound$FF$fixed==0)
+              ffind <- c(ffind1,ffind2)
+              compound$to <- compound$to[ffind]
+              compound$FF=list(ini=compound$FF$ini[ffind],fixed=compound$FF$fixed[ffind],
+                               lower=compound$FF$lower[ffind],upper=compound$FF$upper[ffind])
+            }
+          }
+          
+          
         }
       }
       if(outpartri=='water-sediment'){
@@ -775,7 +807,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         if(is.null(compound$k)){
           compound$k <- list(ini= 0.1,fixed = 0,lower = 0.0,upper = Inf)
         }
-		if(sum(compound$FF$ini)>1) stop("Formation Fractions cannot add up to over 1")
+        if(sum(compound$FF$ini)>1) stop("Formation Fractions cannot add up to over 1")
         compound$kFF=list(ini=compound$FF$ini*compound$k$ini,fixed=compound$FF$fixed*compound$k$fixed,lower=rep(0,n),upper=rep(Inf,n))
         compound$k_compound_sink <- list(ini=(1-sum(compound$FF$ini))*compound$k$ini,fixed=prod(compound$FF$fixed),lower=0,upper=Inf)
       }
@@ -821,7 +853,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
           ##compound$M0$ini <- tmp[1]     ## here we can change to the fitted value instead if possible.     
           compound$M0$ini <- mean(compound$residue[compound$time==0],na.rm=TRUE)
           if(logall) loginfo("Initial values for M0 changed to the average of time 0")
-          }
+        }
       }else{
         ## compound$M0 is set up by the user! and there is data available
         if(!is.null(data)){
@@ -890,8 +922,15 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         new_parms.lower <- c(compound$alpha$lower,compound$beta$lower)
         new_parms.upper <- c(compound$alpha$upper,compound$beta$upper)
         new_fixed <- NULL
-        if (compound$alpha$fixed==1) new_fixed <- c(new_fixed,alphaname)
-        if (compound$beta$fixed==1) new_fixed <- c(new_fixed,betaname)
+        new_fixed_flag <- NULL
+        if (compound$alpha$fixed==1) {
+          new_fixed <- c(new_fixed,alphaname)
+          new_fixed_flag <- c(new_fixed_flag ,"user")
+        }
+        if (compound$beta$fixed==1) {
+          new_fixed <- c(new_fixed,betaname)
+          new_fixed_flag <-c(new_fixed_flag,"user")
+        }
         ## # finish FOMC parameters without the formation fraction part. # ##
         ## # FOMC cannot using the parametrization without formation fraction # ##
       }
@@ -924,9 +963,22 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
           new_parms.lower <- c(compound$k1$lower,compound$k2$lower,compound$g$lower)
           new_parms.upper <- c(compound$k1$upper,compound$k2$upper,compound$g$upper)
           new_fixed <- NULL
-          if (compound$k1$fixed==1) new_fixed <- c(new_fixed,k1name)
-          if (compound$k2$fixed==1) new_fixed <- c(new_fixed,k2name)
-          if (compound$g$fixed==1) new_fixed <- c(new_fixed,gname)
+          new_fixed_flag <- NULL
+          if (compound$k1$fixed==1) {
+            new_fixed <- c(new_fixed,k1name)
+            new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k1$flag)) && compound$k1$flag=="KinGUII","KinGUII","user"))
+            
+          }
+          if (compound$k2$fixed==1) {
+            new_fixed <- c(new_fixed,k2name)
+            new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k2$flag)) && compound$k2$flag=="KinGUII","KinGUII","user"))
+            
+          }
+          if (compound$g$fixed==1) {
+            new_fixed <- c(new_fixed,gname)
+            new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$g$flag)) && compound$g$flag=="KinGUII","KinGUII","user"))
+            
+          }
           
         }else{
           k1name <-paste("k1", new_boxes[[1]],  sep="_")
@@ -951,9 +1003,22 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
           new_parms.lower <- c(compound$k1$lower,compound$k2$lower,compound$g$lower)
           new_parms.upper <- c(compound$k1$upper,compound$k2$upper,compound$g$upper)
           new_fixed <- NULL
-          if (compound$k1$fixed==1) new_fixed <- c(new_fixed,k1name)
-          if (compound$k2$fixed==1) new_fixed <- c(new_fixed,k2name)
-          if (compound$g$fixed==1) new_fixed <- c(new_fixed,gname)
+          new_fixed_flag <- NULL
+          if (compound$k1$fixed==1) {
+            new_fixed <- c(new_fixed,k1name)
+            new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k1$flag)) && compound$k1$flag=="KinGUII","KinGUII","user"))
+            
+          }
+          if (compound$k2$fixed==1) {
+            new_fixed <- c(new_fixed,k2name)
+            new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k2$flag)) && compound$k2$flag=="KinGUII","KinGUII","user"))
+            
+          }
+          if (compound$g$fixed==1) {
+            new_fixed <- c(new_fixed,gname)
+            new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$g$flag)) && compound$g$flag=="KinGUII","KinGUII","user"))
+            
+          }
         }
       }## end of DFOP
       if(compound$type=='HS'){
@@ -979,9 +1044,20 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         new_parms.lower <- c(compound$k1$lower,compound$k2$lower,compound$tb$lower)
         new_parms.upper <- c(compound$k1$upper,compound$k2$upper,compound$tb$upper)
         new_fixed <- NULL
-        if(compound$k1$fixed==1) new_fixed <- c(new_fixed,k1name)
-        if(compound$k2$fixed==1) new_fixed <- c(new_fixed,k2name)
-        if(compound$tb$fixed==1) new_fixed <- c(new_fixed,tbname)
+        new_fixed_flag <- NULL
+        if(compound$k1$fixed==1) {
+          new_fixed <- c(new_fixed,k1name)
+          new_fixed_flag <- c(new_fixed_flag,"user")
+          
+        }
+        if(compound$k2$fixed==1) {
+          new_fixed <- c(new_fixed,k2name)
+          new_fixed_flag <- c(new_fixed_flag,"user")
+        }
+        if(compound$tb$fixed==1) {
+          new_fixed <- c(new_fixed,tbname)
+          new_fixed_flag <- c(new_fixed_flag,"user")
+        }
       }
       if(compound$type=='SFORB'){
         stop('For SFORB model, it is not allowed to use a parameterization with formation fractions! SFORB is only implemented but not fully tested.')
@@ -997,7 +1073,12 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         new_parms.lower <- compound$k$lower
         new_parms.upper <- compound$k$upper
         new_fixed <- NULL
-        if(compound$k$fixed==1) new_fixed<- c(new_fixed,k_compound_sink)
+        new_fixed_flag <- NULL
+        if(compound$k$fixed==1) {
+          new_fixed<- c(new_fixed,k_compound_sink)
+          new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k$flag)) && compound$k$flag=="KinGUII","KinGUII","user"))
+          
+        }
         compound$sink_term <- sink_term
       }
       ## common for all types of kinect models
@@ -1006,6 +1087,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
       compound$new_parms.lower <- new_parms.lower
       compound$new_parms.upper <- new_parms.upper
       compound$new_fixed <- new_fixed
+      compound$new_fixed_flag <- new_fixed_flag
       
     }## end for if(outpartri=='default') conditional on inputpartri=='default'
     if(outpartri=='water-sediment'){
@@ -1015,6 +1097,17 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
       new_parms.lower <- NULL
       new_parms.upper <- NULL
       new_fixed <- NULL
+      new_fixed_flag <- NULL
+      if(compound$sink==FALSE){
+        if(is.null(compound$k_compoud_sink)){
+          compound$k_compound_sink <-list(ini=0,fixed=1,lower=0,upper=Inf,flag="KinGUII")
+        }else{
+          if(compound$k_compound_sink$ini!=0 | compound$k_compound_sink$fixed!=1){
+            compound$k_compound_sink <-list(ini=0,fixed=1,lower=0,upper=Inf,flag="KinGUII")
+          }
+        }
+        
+      }
       if(compound$sink==TRUE){
         if(is.null(compound$k_compoud_sink)){
           ## even if sink==FALSE no hurt for adding this
@@ -1028,7 +1121,10 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         new_parms.ini <-compound$k_compound_sink$ini
         new_parms.lower <-compound$k_compound_sink$lower
         new_parms.upper <-compound$k_compound_sink$upper
-        if(compound$k_compound_sink$fixed==1) new_fixed<- c(new_fixed,k_compound_sink)
+        if(compound$k_compound_sink$fixed==1) {
+          new_fixed<- c(new_fixed,k_compound_sink)
+          new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k_compound_sink$flag)) && compound$k_compound_sink$flag=="KinGUII","KinGUII","user"))
+        }
       }###
       if(compound$type=='FOMC'){
         stop('For FOMC, it is not allowed to use a parameterization without formation fractions!')
@@ -1053,6 +1149,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
       compound$new_parms.lower <- new_parms.lower
       compound$new_parms.upper <- new_parms.upper
       compound$new_fixed <- new_fixed
+      compound$new_fixed_flag <- new_fixed_flag
     }## end for if(outpartri=='water-sediment')
     
   }## end for if(inpartri=='default')  input parameter being the default fomat with FF inputs
@@ -1064,6 +1161,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
       new_parms.lower <- NULL
       new_parms.upper <- NULL
       new_fixed <- NULL
+      new_fixed_flag <- NULL
       if(compound$sink==TRUE){
         if(is.null(compound$k_compoud_sink)){
           ## even if sink==FALSE no hurt for adding this
@@ -1077,7 +1175,10 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         new_parms.ini <-compound$k_compound_sink$ini
         new_parms.lower <-compound$k_compound_sink$lower
         new_parms.upper <-compound$k_compound_sink$upper
-        if(compound$k_compound_sink$fixed==1) new_fixed<- c(new_fixed,k_compound_sink)
+        if(compound$k_compound_sink$fixed==1) {
+          new_fixed<- c(new_fixed,k_compound_sink)
+          new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k_compound_sink$flag)) && compound$k_compound_sink$flag=="KinGUII","KinGUII","user"))         
+        }
       }###
       if(compound$type=='SFORB'){
         k_free_bound <- paste("k", varname, "free", "bound", sep="_")
@@ -1096,8 +1197,16 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
         new_parms.ini <-c(new_parms.ini, compound$k_free_bound$ini,compound$k_bound_free$ini )
         new_parms.lower <-c(new_parms.lower, compound$k_free_bound$lower,compound$k_bound_free$lower )
         new_parms.upper <-c(new_parms.upper, compound$k_free_bound$upper,compound$k_bound_free$upper )
-        if(compound$k_free_bound$fixed==1) new_fixed<- c(new_fixed,k_free_bound)
-        if(compound$k_bound_free$fixed==1) new_fixed<- c(new_fixed,k_bound_free)
+        if(compound$k_free_bound$fixed==1) {
+          new_fixed<- c(new_fixed,k_free_bound)
+          new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k_free_bound$flag)) && compound$k_free_bound$flag=="KinGUII","KinGUII","user"))
+          
+        }
+        if(compound$k_bound_free$fixed==1) {
+          new_fixed<- c(new_fixed,k_bound_free)
+          new_fixed_flag <- c(new_fixed_flag,ifelse((!is.null(compound$k_bound_free$flag)) && compound$k_bound_free$flag=="KinGUII","KinGUII","user"))
+          
+        }
         
       }##
       ## if(compound$type=='SFO'){
@@ -1122,6 +1231,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
       compound$new_parms.lower <- new_parms.lower
       compound$new_parms.upper <- new_parms.upper
       compound$new_fixed <- new_fixed
+      compound$new_fixed_fixed_flag <- new_fixed_flag
     }## end for if(outpartri=='water-sediment'){&& if(inpartri=='water-sediment')}
     if(outpartri=='default'){
       stop('Not Implemented YET!! Please wait until the next update!')
@@ -1164,6 +1274,6 @@ ForwardCalcFF <- function(trueff)
   ff
 }
 fitParent <- function(parent){
-## parent of a list with 0 and other stuff.
-## A quick and dirty fit to get better initial values for parent compartment.
+  ## parent of a list with 0 and other stuff.
+  ## A quick and dirty fit to get better initial values for parent compartment.
 }

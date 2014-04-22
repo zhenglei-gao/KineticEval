@@ -1,0 +1,189 @@
+ChangeLog for package KineticEval
+
+changes in version 1.0-37 (2014-04-17)
+fixed:
+  - ODE numerical solutions with NaNs.
+
+changes in version 1.0-36 (2014-03-31)
+added:
+  - More Demos: water-sediment and MCMC
+
+changes in version 1.0-35 (2014-03-31)
+added:
+  - option to use Jacobian or hessian to calculate covariance matrix.
+  - Index for Demo files
+fixed:
+  - MCMC formation fraction calculation not updated
+
+changes in version 1.0-33 (2014-03-31)
+changed:
+  - warning text.
+fixed:
+  - water-sediment bug.
+
+changes in version 1.0-32 (2014-03-27)
+fixed:
+  - output incorrect due to no single formation fractions.
+
+changes in version 1.0-31 (2014-03-24)
+fixed:
+  - stop message show up in the comments, not necessary.
+  - output incorrect for single Parent due to no transformed formation
+    fractions.
+
+changes in version 1.0-30 (2014-03-06)
+fixed:
+  - stop message show up in the comments, not necessary.
+
+changes in version 1.0-29 (2014-03-06)
+added:
+  - Function MCstd to calculate the standard error of formation fractions
+fixed:
+  - #28, formation fraction standard error calculation by faked posterior
+    distributions
+
+changes in version 1.0-28 (2014-03-06)
+fixed:
+  - #28, formation fraction standard error calculation by faked posterior
+    distributions
+
+changes in version 1.0-27 (2014-03-05)
+added:
+  - Covariance calculation default by Jacobian
+fixed:
+  - #27, not trustable CI
+  - added model message
+
+changes in version 1.0-25 (2014-02-10)
+changed:
+  - mkin move to imports
+
+changes in version 1.0-24 (2014-02-10)
+added:
+  - ChangeLog
+changed:
+  - NEWS
+
+changes in version 1.0-23 (2014-02-10)
+changed:
+  - using roxyPackage instead for building pachages
+fixed:
+  - Metabolite as a SINK
+  - Chi2Error being Inf or NaN
+
+changes in version 1.0-22 (2014-02-10)
+added:
+  - Metabolite as a SINK
+
+changes in version 1.0-21 (2014-01-24)
+fixed:
+  - Multiple Metabolite and no SINK
+
+changes in version 1.0-20 (2013-10-27)
+fixed:
+  - Chi2 error NA when df <=0.
+
+changes in version 1.0-19 (2013-10-27)
+added:
+  - A fit plot in pdf format is generated for reporting.
+fixed:
+  - Output KineticEval Effectively fixed: formation fractions.
+
+changes in version 1.0-18 (2013-10-27)
+changed:
+  - Add eval Methods in output
+
+changes in version 1.0-17 (2013-10-27)
+added:
+  - Add an option to compute the exact Hessian using `numDeriv`, produce
+    p-value 0.5 instead of NA's.
+  - 
+changed:
+  - Warning messages modified.
+
+changes in version 1.0-16 (2013-10-27)
+added:
+  - Issue an warning when changing the initial values.
+fixed:
+  - M0 not fixed: at 100 for parent substance.
+
+changes in version 1.0-15 (2013-10-27)
+added:
+  - No added:
+fixed:
+  - CI different from different optimization, NA or not NA?.
+
+changes in version 1.0-14 (2013-10-27)
+added:
+  - No added:
+fixed:
+  - changed: for `KinReport` function.
+
+changes in version 1.0-13 (2013-10-27)
+added:
+  - No added:
+fixed:
+  - #15, MCMC bug for incomplete data.
+
+changes in version 1.0-12 (2013-10-27)
+added:
+  - No added:
+fixed:
+  - internal function `norm` to `KineticEval:::norm`
+  - #15, test cases for `ginv`
+
+changes in version 1.0-11 (2013-10-27)
+changed:
+  - 
+  - Add routines generating logging files. #14
+  - Add routines generating report files, .kgg, .kgo when the model is not
+    correctly set up or when the optimization could not be finished. #14
+
+changes in version 1.0-10 (2013-10-27)
+added:
+  - Add Comment lines in the output summary file.
+
+changes in version 1.0-9 (2013-10-27)
+fixed:
+  - #10. using generalized inverse to calculate inverse of the hessian.
+  - #16, with Generalized inverse, output NA where is appropriate.
+
+changes in version 1.0-8 (2013-10-27)
+fixed:
+  - #11. TRR problematic case
+  - #6. Ghost compartment is correctly handled now.
+  - #5. 3 DFOP models.
+
+changes in version 1.0-7 (2013-10-27)
+added:
+  - No added:
+fixed:
+  - #1, FOMC not calculated.
+
+changes in version 1.0-5 (2013-10-27)
+added:
+  - No added:
+fixed:
+  - fixed: starting value problem. starting value reported by lab people need
+    to be changed:.
+
+changes in version 1.0-4 (2013-10-27)
+added:
+  - added: a function `summay.kingui` to summarize a model
+  - added: a few example data sets
+  - added: a demo named `Complex_Model`
+
+changes in version 1.0-3 (2013-10-27)
+fixed:
+  - #1 FOMC model result is not calculated.
+  - #2 DFOP DT90 is not correctly calculated.
+
+changes in version 1.0-2 (2013-10-27)
+fixed:
+  - #0, DFOP model for metabolite is re-established in the correct form.
+
+changes in version 1.0-1 (2013-10-27)
+changed:
+  - in this NEWS file, #n means the issue number on GitHub, e.g. #2 is
+    https://github.com/zhenglei-gao/KineticEval/issues/2
+
