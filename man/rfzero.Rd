@@ -2,7 +2,7 @@
 \alias{rfzero}
 \title{Finding the solution for f=0 on the right side.}
 \usage{
-  rfzero(f, ..., lower = 0, tol = 1e-06, maxiter = 100)
+  rfzero(f, ..., lower = 0, tol = 0.000001, maxiter = 100)
 }
 \arguments{
   \item{f}{function to solve for 0}

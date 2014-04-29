@@ -1,8 +1,21 @@
 ChangeLog for package KineticEval
 
-changes in version 1.0-37 (2014-04-17)
+changes in version 1.0-39 (2014-04-24)
+changed:
+  - scientic format is set to scipen=10 for DT50 printing
+
+changes in version 1.0-38 (2014-04-24)
+fixed:
+  - Water-Sediment setting returns degradation rates instead of dissipation
+    rates now
+changed:
+  - scientic format is set to scipen=10 for DT50 printing
+
+changes in version 1.0-37 (2014-04-23)
 fixed:
   - ODE numerical solutions with NaNs.
+  - Water-Sediment setting returns degradation rates instead of dissipation
+    rates now
 
 changes in version 1.0-36 (2014-03-31)
 added:

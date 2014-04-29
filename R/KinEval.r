@@ -41,6 +41,7 @@
 ##'                            tolerance = 0.001))
 ##' @keywords Kinetic-Evaluations
 ##' @import FME Rsolnp optimx BB minqa deSolve coda minpack.lm numDeriv
+##' @note adapted from \code{mkinfit} and \code{}
 ##' @export
 KinEval <- function(mkinmodini,
                     evalMethod=c('NLLS','IRLS','MCMC','directMLE'),
@@ -555,6 +556,9 @@ KinEval <- function(mkinmodini,
         fixed0 <- mkinmodini$start[mkinmodini$start$fixed==1,]
         if(nrow(fixed0)>0) fit$fixed0 <- rbind(fit$fixed0,data.frame(value=fixed0$initial,type=fixed0$type,by=rep('user',nrow(fixed0)),row.names=rownames(fixed0)))
       }else{
+        ## for inpartri being defaul with formation fraction and 
+        ## outpartri being water-sediment, the program cannot fix anything unless k*ff are both fixed.
+        ## there is also no original start0 and fixed0
         fit$start0 <- NULL
         fit$fixed0 <- NULL
       }
@@ -631,7 +635,8 @@ KinEval <- function(mkinmodini,
       }
       fit$errmin <- errmin
       
-      ## Calculate dissipation times DT50 and DT90 and formation fractions
+      ## Calculate degradation(not dissipation) times DT50 and DT90 and formation fractions
+    
       parms.all = c(fit$par, parms.fixed)
       fit$distimes <- data.frame(DT50 = rep(NA, length(obs_vars)), DT90 = rep(NA, length(obs_vars)),Kinetic=rep(NA,length(obs_vars)),row.names = obs_vars)
       #########################################################################
@@ -667,10 +672,9 @@ KinEval <- function(mkinmodini,
           alphaname <- paste("alpha", obs_var,  sep="_")
           betaname <- paste("beta", obs_var,  sep="_")
           if (type == "SFO") {
-            ##k_names = grep(paste("k", obs_var, sep="_"), names(parms.all), value=TRUE)
-            ##k_tot = sum(parms.all[k_names])
-            k_name <- paste("k", obs_var,sep="_")#grep(paste("k", obs_var,sep="_"), names(parms.all), value=TRUE)
-            k_tot <- parms.all[k_name]
+              k_name <- paste("k", obs_var,sep="_")#grep(paste("k", obs_var,sep="_"), names(parms.all), value=TRUE)
+              k_tot <- parms.all[k_name]
+            
             DT50 = log(2)/k_tot
             DT90 = log(10)/k_tot
             ## for (k_name in k_names)
@@ -840,11 +844,20 @@ KinEval <- function(mkinmodini,
           betaname <- paste("beta", obs_var,  sep="_")
           if (type == "SFO") {
             k_names = grep(paste("k_", obs_var,'_', sep=""), names(parms.all), value=TRUE)
-            k_tot = sum(parms.all[k_names])
+            cat("Seperating transportation rate from the degradation rates")
+            ## check whether there are 2 arrows,
+            ## 
+            if(logall){loginfo("For water-sediment settings, degradation DT50 are reported.")}
+            k_ins <- grep(paste0("k.*_to_",obs_var), names(parms.all), value=TRUE)
+            rb <- sub(paste0("_to_",obs_var),"",k_ins)
+            rb <- sub("k_","",rb)
+            k_transport <- sapply(rb,function(x)grep(paste0(obs_var,"_to_",x),k_names,value=TRUE))
+            k_deg <- setdiff(k_names,k_transport)
+            k_tot = sum(parms.all[k_deg])
             DT50 = log(2)/k_tot
             DT90 = log(10)/k_tot
             for (k_name in k_names){
-              fit$ff[[sub("k_", "", k_name)]] = parms.all[[k_name]] / k_tot
+              fit$ff[[sub("k_", "", k_name)]] = parms.all[[k_name]] / sum(parms.all[k_name])
             }
           }
           if (type == "FOMC") {
@@ -1788,11 +1801,12 @@ print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),det
   }
   
   printdistimes <- !is.null(x$distimes)
+  options("scipen"=10)
   if(printdistimes){
     cat("\nEstimated disappearance times:\n")
     print(x$distimes, digits=digits,...)
   }
-  
+  options("scipen"=0)
   
   
   

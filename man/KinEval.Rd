@@ -79,6 +79,9 @@
   maximum likelihood estimates of the kinetic model
   parameters.
 }
+\note{
+  adapted from \code{mkinfit} and \code{}
+}
 \examples{
 complex <- mkinmod.full(
  parent = list(type = "SFO", to = c("A1", "B1", "C1"), sink = FALSE),

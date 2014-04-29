@@ -1,10 +1,25 @@
 \name{NEWS}
 \title{News for Package 'KineticEval'}
 \encoding{UTF-8}
-\section{Changes in KineticEval version 1.0-37 (2014-04-17)}{
+\section{Changes in KineticEval version 1.0-38 (2014-04-24)}{
+  \subsection{fixed}{
+    \itemize{
+      \item Water-Sediment setting returns degradation rates instead of dissipation
+        rates now
+    }
+  }
+  \subsection{changed}{
+    \itemize{
+      \item scientic format is set to scipen=10 for DT50 printing
+    }
+  }
+}
+\section{Changes in KineticEval version 1.0-37 (2014-04-23)}{
   \subsection{fixed}{
     \itemize{
       \item ODE numerical solutions with NaNs.
+      \item Water-Sediment setting returns degradation rates instead of dissipation
+        rates now
     }
   }
 }

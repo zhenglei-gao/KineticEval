@@ -4,12 +4,12 @@
 evaluations using NLS and IRLS.}
 \usage{
   kingui.control(method = "LM", maxIter = 100,
-    tolerance = 1e-08, odesolver = "lsoda", atol = 1e-09,
-    rtol = 1e-10, rhobeg = 0.05, iprint = 1, trace = 0,
-    goMarq = 0, delta = 1e-06, rho = 1, submethod = "Port",
-    Hmethod1 = "LM", Hmethod2 = "L-BFGS-B", quiet.tol = 1,
-    automate = TRUE, calcJacob = TRUE, runTRR4 = FALSE,
-    ...)
+    tolerance = 0.00000001, odesolver = "lsoda",
+    atol = 0.000000001, rtol = 1e-10, rhobeg = 0.05,
+    iprint = 1, trace = 0, goMarq = 0, delta = 0.000001,
+    rho = 1, submethod = "Port", Hmethod1 = "LM",
+    Hmethod2 = "L-BFGS-B", quiet.tol = 1, automate = TRUE,
+    calcJacob = TRUE, runTRR4 = FALSE, ...)
 }
 \arguments{
   \item{method}{The method to be used, one of "Rsolnp",
