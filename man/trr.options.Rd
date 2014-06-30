@@ -4,7 +4,7 @@
 \usage{
   trr.options(nopar = 1, gradflag = 0, pcflags = Inf,
     MaxPCGIter = 1, TolPCG = 0.1, MaxFunEvals = 100,
-    MaxIter = 500, TolFun = 0.000001, TolX = 0.000001)
+    MaxIter = 500, TolFun = 1e-06, TolX = 1e-06)
 }
 \arguments{
   \item{nopar}{number of parameters}

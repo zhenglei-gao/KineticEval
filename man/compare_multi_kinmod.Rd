@@ -3,7 +3,7 @@
 \title{Function to update kinetic model and do a comparison of two parameter estimations.}
 \usage{
   compare_multi_kinmod(mkinmodini, newparms, eigen = FALSE,
-    odesolver = "lsoda", atol = 0.000000001, rtol = 1e-10)
+    odesolver = "lsoda", atol = 1e-09, rtol = 1e-10)
 }
 \arguments{
   \item{mkinmodini}{a list of class mkinmod}

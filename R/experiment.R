@@ -16,6 +16,10 @@ DefDiff <- function(t, state, parms,mod_vars,diffeqns) {
   return(list(c(diffs)))
 }
 
+compDiff <- function(t,state,parms){
+  
+}
+
 ## Calculate DTx (Formation fractions are calcualted in the evaluation function)
 calcDT <- function(type="SFO",...){
   if(type=="SFO"){
@@ -94,57 +98,65 @@ calcDT <- function(type="SFO",...){
       DT90 <- calcDTx(k1,k2,tb,x=90)
     }
   }
-    if (type == "SFORB") {
-      # FOCUS kinetics (2006), p. 60 f
-      
-      sqrt_exp = sqrt(1/4 * (k_12 + k_21 + k_1output)^2 + k_12 * k_21 - (k_12 + k_1output) * k_21)
-      b1 = 0.5 * (k_12 + k_21 + k_1output) + sqrt_exp
-      b2 = 0.5 * (k_12 + k_21 + k_1output) - sqrt_exp
-      
-      SFORB_fraction = function(t) {
-        ((k_12 + k_21 - b1)/(b2 - b1)) * exp(-b1 * t) +
-          ((k_12 + k_21 - b2)/(b1 - b2)) * exp(-b2 * t)
-      }
-      f_50 <- function(t) (SFORB_fraction(t) - 0.5)^2
-      max_DT <- 1000
-      DT50.o <- optimize(f_50, c(0.01, max_DT))$minimum
-      if (abs(DT50.o - max_DT) < 0.01) DT50 = NA else DT50 = DT50.o
-      f_90 <- function(t) (SFORB_fraction(t) - 0.1)^2
-      DT90.o <- optimize(f_90, c(0.01, 1000))$minimum
-      if (abs(DT90.o - max_DT) < 0.01) DT90 = NA else DT90 = DT90.o
+  if (type == "SFORB") {
+    # FOCUS kinetics (2006), p. 60 f
+    
+    sqrt_exp = sqrt(1/4 * (k_12 + k_21 + k_1output)^2 + k_12 * k_21 - (k_12 + k_1output) * k_21)
+    b1 = 0.5 * (k_12 + k_21 + k_1output) + sqrt_exp
+    b2 = 0.5 * (k_12 + k_21 + k_1output) - sqrt_exp
+    
+    SFORB_fraction = function(t) {
+      ((k_12 + k_21 - b1)/(b2 - b1)) * exp(-b1 * t) +
+        ((k_12 + k_21 - b2)/(b1 - b2)) * exp(-b2 * t)
     }
-    return(c(DT50,DT90))
+    f_50 <- function(t) (SFORB_fraction(t) - 0.5)^2
+    max_DT <- 1000
+    DT50.o <- optimize(f_50, c(0.01, max_DT))$minimum
+    if (abs(DT50.o - max_DT) < 0.01) DT50 = NA else DT50 = DT50.o
+    f_90 <- function(t) (SFORB_fraction(t) - 0.1)^2
+    DT90.o <- optimize(f_90, c(0.01, 1000))$minimum
+    if (abs(DT90.o - max_DT) < 0.01) DT90 = NA else DT90 = DT90.o
   }
-  
-  ## set up differential equation -- replace some parameters with some values/strings.
-  ## The question is where to implement the parameter transformation.
-  ## Keep the differential equation the same but transform back to the ode parms
-  ## from the optim parms. 
-  ## Or transform the objective functions into the original scale?
-  
-  ## Second approach is better!! since we want to use the transformed parms in the
-  ## optimization and original scale in final Hessian/Jacobian calculation.The hessian is calculated always relative to the
-  ## optim parm scales.
-  
-  ## for transformations using log, if you fix your parameter at 0 or 1, then don't
-  ## do the transformation!!
-  
-  ## flexible control of each parameter?? if(met$k$transform==NULL){ ## no need of this step
-  ##  if(!is.null(KinOptions$transformk)){
-  ##    k_opt <- KinOptions$transformk(k)
-  ##    f_opt <- KinOptions$transformff(ff)
-  ##    g_opt <- # KinOptions$transformff(ff)
-  ## }
-  ## put them into the two sets differential equations.
-  ## }
-  setDiff <- function(){
+  return(c(DT50,DT90))
+}
+
+## set up differential equation -- replace some parameters with some values/strings.
+## The question is where to implement the parameter transformation.
+## Keep the differential equation the same but transform back to the ode parms
+## from the optim parms. 
+## Or transform the objective functions into the original scale?
+
+## Second approach is better!! since we want to use the transformed parms in the
+## optimization and original scale in final Hessian/Jacobian calculation.The hessian is calculated always relative to the
+## optim parm scales.
+
+## for transformations using log, if you fix your parameter at 0 or 1, then don't
+## do the transformation!!
+
+## flexible control of each parameter?? if(met$k$transform==NULL){ ## no need of this step
+##  if(!is.null(KinOptions$transformk)){
+##    k_opt <- KinOptions$transformk(k)
+##    f_opt <- KinOptions$transformff(ff)
+##    g_opt <- # KinOptions$transformff(ff)
+## }
+## put them into the two sets differential equations.
+## }
+
+## NONONO, maybe we don't need that since P is only a vector with named elements.
+setDiff <- function(){
+}
+
+RHS <- function(){
+  ## should be an updated version of kin_mod
+}
+
+
+
+KinOptions <- function(...){
+  default <- kingui.control()
+  select <- list(...)
+  for(nam in names(select)){
+    default[[nam]] <- select[[nam]]
   }
-  
-  KinOptions <- function(...){
-    default <- kingui.control()
-    select <- list(...)
-    for(nam in names(select)){
-      default[[nam]] <- select[[nam]]
-    }
-    return(default)
-  }
+  return(default)
+}
