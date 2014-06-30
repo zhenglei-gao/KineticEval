@@ -1,5 +1,9 @@
 ChangeLog for package KineticEval
 
+changes in version 1.0-40 (2014-05-12)
+fixed:
+  - #31, first observed data not at time 0.
+
 changes in version 1.0-39 (2014-04-24)
 changed:
   - scientic format is set to scipen=10 for DT50 printing

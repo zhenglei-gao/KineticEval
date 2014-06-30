@@ -124,11 +124,11 @@ KinEval <- function(mkinmodini,
   optim_parms <- setdiff(names(parms.ini), fixed_parms)
   parms.optim <- parms.ini[optim_parms]
   
-  
   ## # ### ### ### ### ###
   state.ini.fixed <- state.ini[fixed_initials]
   optim_initials <- setdiff(names(state.ini), fixed_initials)
   state.ini.optim <- state.ini[optim_initials]
+  if(is.null(state.ini.orig)) state.ini.orig <- state.ini
   state.ini.orig.optim <- state.ini.orig[optim_initials]
   state.ini.optim.boxnames <- names(state.ini.optim)
   state.ini.fixed.boxnames <- names(state.ini.fixed)
@@ -277,7 +277,7 @@ KinEval <- function(mkinmodini,
               res0 <- res00
               rm(res00)
               if(logall==TRUE){
-                logerror("STIR step failed. Please report this case.")
+                logwarn("STIR step failed. Please report this case.")
                 
                 loginfo("Restore the results from LM optimization algorithm.")
               }
@@ -1024,7 +1024,7 @@ KinEval <- function(mkinmodini,
 ##' @author Zhenglei Gao
 ##' @S3method summary mkinmod.full
 ##' @rdname summary.mkinmod.full
-summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version="2.2013.0923.1534"){
+summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version=NULL){
  
   ## KineticEval::summary.mkinmod.full
   odesolver <- ctr$odesolver
@@ -1605,7 +1605,7 @@ atBoundary <- function(par,lower,upper){
 ##' \item{stopmess}{Warning message.}
 ##' @author Zhenglei Gao
 ##' @rdname summary.kingui
-summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov = FALSE,version="1.2011.922.1530",...) {
+summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov = FALSE,version=NULL,...) {
   options(warn=-1)
   param  <- object$par
   pnames <- names(param)
@@ -1737,7 +1737,7 @@ myformat <- function(x,digits=4,...)
 print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
   
   cat(paste("KineticEval Package Version:",packageVersion("KineticEval"),"\n"))
-  cat(paste('Version:',x$version,'\n'))
+  if(!is.null(x$version)) cat(paste('Version:',x$version,'\n'))
   
   cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
   cat(paste("\nMethod:",x$evalMethod,"\n"))

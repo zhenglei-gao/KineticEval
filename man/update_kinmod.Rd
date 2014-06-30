@@ -4,7 +4,7 @@
 \usage{
   update_kinmod(mkinmodini, newparms = NULL, Fit = NULL,
     compareChi2 = FALSE, eigen = FALSE,
-    odesolver = "lsoda", atol = 0.000000001, rtol = 1e-10)
+    odesolver = "lsoda", atol = 1e-09, rtol = 1e-10)
 }
 \arguments{
   \item{mkinmodini}{a list of class mkinmod}

@@ -4,7 +4,7 @@
 \usage{
   \method{summary}{kingui} (object, data = TRUE,
     distimes = TRUE, ff = TRUE, cov = FALSE,
-    version = "1.2011.922.1530", ...)
+    version = NULL, ...)
 }
 \arguments{
   \item{object}{A fitted object of class 'kingui' from the
