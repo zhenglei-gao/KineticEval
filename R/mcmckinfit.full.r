@@ -1006,10 +1006,10 @@ summary.mcmckingui <- function (object, remove = NULL, data=TRUE,distimes=TRUE,f
     uci <-apply(mcmc,2,quantile,probs=0.975)
     names(se) <- pnames
     param <- cbind(param, se, lci,uci)
-     ## adding one line when there is fixed by KinGui object
+     ## adding one line when there is fixed by KinGUII object
     pnames1 <- pnames
 
-    fid <- which(object$fixed$by=='KinGui')
+    fid <- which(object$fixed$by=='KinGUII')
     if(length(fid)>0){
         nfid <- length(fid)
         param <- rbind(param,(cbind(object$fixed$value[fid],matrix(NA,nfid,3))))

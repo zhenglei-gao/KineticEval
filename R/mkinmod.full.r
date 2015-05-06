@@ -199,7 +199,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
      if(spec[[varname]]$type=="DFOP"){
        if(spec[[varname]]$M0_sub1$fixed==1 || is.null(spec[[varname]]$M0_sub1)) fixed_initials <- c(fixed_initials,paste(varname,"sub1",sep="_"))
        if(spec[[varname]]$M0_sub2$fixed==1 || is.null(spec[[varname]]$M0_sub2)) fixed_initials <- c(fixed_initials,paste(varname,"sub2",sep="_"))
-       
+    
        state.ini <- c(state.ini,spec[[varname]]$M0_sub1$ini,spec[[varname]]$M0_sub2$ini)
        state.ini.orig <- c(state.ini.orig,spec[[varname]]$M0_sub1$ini,spec[[varname]]$M0_sub2$ini)
        
@@ -452,7 +452,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
                    fixed_flag <- c(fixed_flag,'KinGUII')
                  }else{
                    warning('You need to switch the order if the formation fraction for the last to compartment is fixed at a certain value but you turn off the sink compartment and you have multiple to compartments!')
-                   #fixed_flag[length(fixed_flag)] <- 'KinGui'
+                   #fixed_flag[length(fixed_flag)] <- 'KinGUII'
                  }
                  parms.ini[length(parms.ini)] <-1
                }
@@ -534,10 +534,10 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
                  ## in FF being 1, instead of fixing any original formation
                  ## fractions.
                  fixed_parms <- c(fixed_parms,fraction_to_target)
-                 fixed_flag <- c(fixed_flag,'KinGui')
+                 fixed_flag <- c(fixed_flag,'KinGUII')
                }else{
                  warning('You need to switch the order if the formation fraction for the last to compartment is fixed at a certain value but you turn off the sink compartment and you have multiple to compartments!')
-                 fixed_flag[length(fixed_flag)] <- 'KinGui'
+                 fixed_flag[length(fixed_flag)] <- 'KinGUII'
                }
                parms.ini[length(parms.ini)] <-1
              }
@@ -668,7 +668,6 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
  
  lower <- c(state.lower,parms.lower)
  upper <- c(state.upper,parms.upper)
- 
  if(!is.null(weightmat)) colnames(weightmat) <- obs_vars
  if(!is.null(start)) start$type <-  rep("deparm", nrow(start))
  model <- list(diffs = diffs, parms = parms, map = map,parms.ini=parms.ini,state.ini=state.ini,state.ini.orig=state.ini.orig,lower=lower,upper=upper,fixed_parms=fixed_parms,fixed_flag=fixed_flag,fixed_initials=fixed_initials,residue=as.data.frame(residue),data0=as.data.frame(data0),weightmat=as.data.frame(weightmat),start=start,modelmess=modelmess)
@@ -830,14 +829,14 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
       compound$M0 <- list(ini = 100,fixed = 0,lower = 0.0,upper = Inf)
       if(!is.null(compound$residue)){
         ## since it is first, there must be a time component!
-        compound$M0$ini <- mean(compound$residue[compound$time==0],na.rm=TRUE)     ## here we can change to the fitted value instead if possible.     
+        if(autoInit == TRUE) compound$M0$ini <- mean(compound$residue[compound$time==min(compound$time,na.rm=TRUE)],na.rm=TRUE)     ## here we can change to the fitted value instead if possible.     
         ## note that mean(numeric(0))=NaN
       }else{
         if(!is.null(data)){
-          compound$M0$ini <- mean(data[data[,1]==0,2],na.rm=TRUE)     ## here we can change to the fitted value instead if possible.     
+          compound$M0$ini <- mean(data[data[,1]==min(data[,1],na.rm=T),2],na.rm=TRUE)     ## here we can change to the fitted value instead if possible.     
           if(logall) loginfo("Initial values for M0 changed to the average concentrations at time 0")
         }else{
-          compound$M0 <- list(ini = 100,fixed = 0,lower = 0.0,upper = Inf) ## assign 0 for metabolites, 100 for parents.
+          if(autoInit == TRUE) compound$M0 <- list(ini = 100,fixed = 0,lower = 0.0,upper = Inf) ## assign 0 for metabolites, 100 for parents.
           
         }
       }
@@ -851,7 +850,7 @@ completeCompound <- function(compound=list(type='SFO',to='M1'),varname=NULL,firs
           ##browser()
           compound$M0.orig <- compound$M0
           ##compound$M0$ini <- tmp[1]     ## here we can change to the fitted value instead if possible.     
-          compound$M0$ini <- mean(compound$residue[compound$time==0],na.rm=TRUE)
+          if(autoInit == TRUE) compound$M0$ini <- mean(compound$residue[compound$time==min(compound$time,na.rm=TRUE)],na.rm=TRUE)
           if(logall) loginfo("Initial values for M0 changed to the average of time 0")
         }
       }else{

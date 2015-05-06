@@ -687,7 +687,7 @@ IRLSkinfit.full <- function(mkinmodini,
     fit$fixed <- data.frame(
                             value = c(state.ini.fixed, parms.fixed))
     fit$fixed$type = c(rep("state", length(state.ini.fixed)), rep("deparm", length(parms.fixed)))
-    ## XXXXXX determine whether it is fixed by user or by KinGui XXXXXXXXXXXXX
+    ## XXXXXX determine whether it is fixed by user or by KinGUII XXXXXXXXXXXXX
     fit$fixed$by <- c(rep("user", length(state.ini.fixed)), mkinmodini$fixed_flag)
 
 

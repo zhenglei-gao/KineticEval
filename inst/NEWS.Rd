@@ -1,6 +1,27 @@
 \name{NEWS}
 \title{News for Package 'KineticEval'}
 \encoding{UTF-8}
+\section{Changes in KineticEval version 1.0-41 (2014-12-11)}{
+  \subsection{fixed}{
+    \itemize{
+      \item #32, KinGui to KinGUII.
+    }
+  }
+}
+\section{Changes in KineticEval version 1.0-40 (2014-05-12)}{
+  \subsection{fixed}{
+    \itemize{
+      \item #31, first observed data not at time 0.
+    }
+  }
+}
+\section{Changes in KineticEval version 1.0-39 (2014-04-24)}{
+  \subsection{changed}{
+    \itemize{
+      \item scientic format is set to scipen=10 for DT50 printing
+    }
+  }
+}
 \section{Changes in KineticEval version 1.0-38 (2014-04-24)}{
   \subsection{fixed}{
     \itemize{

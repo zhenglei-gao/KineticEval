@@ -3,8 +3,8 @@
 #' \tabular{ll}{
 #' Package: \tab KineticEval\cr
 #' Type: \tab Package\cr
-#' Version: \tab 1.0-39\cr
-#' Date: \tab 2014-04-24\cr
+#' Version: \tab 1.0-41\cr
+#' Date: \tab 2014-12-11\cr
 #' Depends: \tab R (>= 2.15), mkin,minqa\cr
 #' Encoding: \tab UTF-8\cr
 #' License: \tab GPL (>= 3)\cr

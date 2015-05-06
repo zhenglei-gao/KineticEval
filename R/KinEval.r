@@ -124,11 +124,11 @@ KinEval <- function(mkinmodini,
   optim_parms <- setdiff(names(parms.ini), fixed_parms)
   parms.optim <- parms.ini[optim_parms]
   
-  
   ## # ### ### ### ### ###
   state.ini.fixed <- state.ini[fixed_initials]
   optim_initials <- setdiff(names(state.ini), fixed_initials)
   state.ini.optim <- state.ini[optim_initials]
+  if(is.null(state.ini.orig)) state.ini.orig <- state.ini
   state.ini.orig.optim <- state.ini.orig[optim_initials]
   state.ini.optim.boxnames <- names(state.ini.optim)
   state.ini.fixed.boxnames <- names(state.ini.fixed)
@@ -277,7 +277,7 @@ KinEval <- function(mkinmodini,
               res0 <- res00
               rm(res00)
               if(logall==TRUE){
-                logerror("STIR step failed. Please report this case.")
+                logwarn("STIR step failed. Please report this case.")
                 
                 loginfo("Restore the results from LM optimization algorithm.")
               }
@@ -570,7 +570,7 @@ KinEval <- function(mkinmodini,
       fit$fixed <- data.frame(
         value = c(state.ini.fixed, parms.fixed))
       fit$fixed$type = c(rep("state", length(state.ini.fixed)), rep("deparm", length(parms.fixed)))
-      ## XXXXXX determine whether it is fixed by user or by KinGui XXXXXXXXXXXXX
+      ## XXXXXX determine whether it is fixed by user or by KinGUII XXXXXXXXXXXXX
       fit$fixed$by <- c(rep("user", length(state.ini.fixed)), mkinmodini$fixed_flag)
       
       
@@ -1024,7 +1024,7 @@ KinEval <- function(mkinmodini,
 ##' @author Zhenglei Gao
 ##' @S3method summary mkinmod.full
 ##' @rdname summary.mkinmod.full
-summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version="2.2013.0923.1534"){
+summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version=NULL){
  
   ## KineticEval::summary.mkinmod.full
   odesolver <- ctr$odesolver
@@ -1605,7 +1605,7 @@ atBoundary <- function(par,lower,upper){
 ##' \item{stopmess}{Warning message.}
 ##' @author Zhenglei Gao
 ##' @rdname summary.kingui
-summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov = FALSE,version="1.2011.922.1530",...) {
+summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov = FALSE,version=NULL,...) {
   options(warn=-1)
   param  <- object$par
   pnames <- names(param)
@@ -1629,12 +1629,12 @@ summary.kingui <- function(object, data = TRUE, distimes = TRUE, ff = TRUE, cov 
   } else message <- "ok"
   
   param <- cbind(param, se, lci,uci, pt(tval, rdf, lower.tail = FALSE))
-  ## adding one line when there is fixed by KinGui object
+  ## adding one line when there is fixed by KinGUII object
   pnames1 <- pnames
   
-#  fid <- which(object$fixed$by=='KinGui')
+#  fid <- which(object$fixed$by=='KinGUII')
 #   if(length(fid)>0){
-#     ## There is some reason that KinGui fixed the parameters!!!!!!!
+#     ## There is some reason that KinGUII fixed the parameters!!!!!!!
 #     
 #     nfid <- length(fid)
 #     param <- rbind(param,(cbind(object$fixed$value[fid],matrix(NA,nfid,4))))
@@ -1737,7 +1737,7 @@ myformat <- function(x,digits=4,...)
 print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),detailed=FALSE, ...) {
   
   cat(paste("KineticEval Package Version:",packageVersion("KineticEval"),"\n"))
-  cat(paste('Version:',x$version,'\n'))
+  if(!is.null(x$version)) cat(paste('Version:',x$version,'\n'))
   
   cat(paste('\n',sessionInfo()$R.version$version.string,'\n',sep=""))
   cat(paste("\nMethod:",x$evalMethod,"\n"))
@@ -1768,7 +1768,7 @@ print.summary.kingui <- function(x, digits = max(3, getOption("digits") - 3),det
   
   fid <- which(x$fixed$by=='KinGUII')
   if(length(fid)>0){
-    ## There is some reason that KinGui fixed the parameters!!!!!!!
+    ## There is some reason that KinGUII fixed the parameters!!!!!!!
     #cat("\nWarning:Parameters fixed by KinGUII. Please check your log file and model set up. One or more of the SINKs are turned off but you did not fix the formation fractions to be 1.\n")
     cat("\nWarning: One or more compartments without sink. Parameters fixed by KinGUII.\n")
     if(!is.null(x$modelmess)) {
