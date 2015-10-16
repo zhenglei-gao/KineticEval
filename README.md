@@ -30,9 +30,13 @@ The package allows the choice between different optimization algorithms. In part
 
 * Under the [GNU General Public License (GPL)](http://www.gnu.org/licenses/gpl.html)
 
+## Wiki
+
+* [Some Incomplete Information](https://github.com/zhenglei-gao/KineticEval/wiki)
+
 ## Questions, Bug reports, and new feature requests
 
-* https://github.com/zhenglei-gao/KineticEval/issues?page=1&state=open
+* [Github Issues](https://github.com/zhenglei-gao/KineticEval/issues?page=1&state=open)
 
 ## Contributions
 
@@ -43,8 +47,9 @@ See [here](https://github.com/jranke/mkin) for a nice description of the histori
 
 See ChangeLog
 
+## Disclaimer
 
-**Warning: Still under development**
+**Warning: Still under development**, use it at your own risk. 
 
 
 
