@@ -1,6 +1,13 @@
 \name{NEWS}
 \title{News for Package 'KineticEval'}
 \encoding{UTF-8}
+\section{Changes in KineticEval version 1.0-42 (2015-10-16)}{
+  \subsection{fixed}{
+    \itemize{
+      \item #36, No summary files after successful fit
+    }
+  }
+}
 \section{Changes in KineticEval version 1.0-41 (2014-12-11)}{
   \subsection{fixed}{
     \itemize{

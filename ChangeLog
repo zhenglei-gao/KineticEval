@@ -1,5 +1,9 @@
 ChangeLog for package KineticEval
 
+changes in version 1.0-42 (2015-10-16)
+fixed:
+  - #36, No summary files after successful fit
+
 changes in version 1.0-41 (2014-12-11)
 fixed:
   - #32, KinGui to KinGUII.

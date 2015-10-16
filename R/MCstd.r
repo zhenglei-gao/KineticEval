@@ -15,7 +15,26 @@ MCstd <- function(mu,sigma,transformations,N=10000,fixed){
  ## transformations <- mkinmodini$ff
  ## fixed<- Fit$fixed[,1]
   ## names(fixed) <- rownames(Fit$fixed)
- 
+if(all(is.na(sigma))){
+  ## Fix issue von Simon #36
+  v_names <- names(mu)
+  ff_names = names(transformations)
+  ff <- NULL
+  
+  fftrans <- function(v,fixed){
+    ff <- NULL
+    if(is.null(names(v))) names(v)<-v_names
+    for (ff_name in ff_names)
+    {
+      ff[[ff_name]] =
+        eval(parse(text = transformations[ff_name]), as.list(c(v,fixed)))
+    }
+    return(ff)
+  }
+  y0 <- fftrans(mu,fixed)
+  res <- cbind(y0,NA,NA,NA)
+  colnames(res) <- c("Estimate", "Std. Error",'Lower CI','Upper CI')
+}else{
   mat <- replicate(N,rnorm(length(mu),mu,sigma))
   ## mat has N columns.
   v_names <- names(mu)
@@ -48,7 +67,8 @@ MCstd <- function(mu,sigma,transformations,N=10000,fixed){
   }else res <- cbind(y0,apply(y,1,sd),t(apply(y,1,function(z)quantile(z,c(0.025,0.975))))
                )
   colnames(res) <- c("Estimate", "Std. Error",'Lower CI','Upper CI')#,
-                     #"Pr(>t)")
+                 #"Pr(>t)")
+}
   return(res)
 }
 
