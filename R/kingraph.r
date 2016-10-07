@@ -35,7 +35,12 @@ kingraph <- function(fit, filename='graphdata.txt',xlab = "Time", ylab = "Observ
   ininames <- c(
     rownames(subset(fit$start, type == "state")),
     rownames(subset(fit$fixed, type == "state")))
+  ## Note that 
+  ## has to change the odeini order since it is different from the mod_vars order.
+  ## although it is already taken care of in the cost(P) function
+  # to reorder the odeini using mod_vars
   odeini <- parms.all[ininames]
+  odeini <- odeini[paste0("M0_",names(fit$diffs))]
   names(odeini) <- names(fit$diffs)
 
   outtimes <- seq(xlim[1], xlim[2], length.out=length.out)

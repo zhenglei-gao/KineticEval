@@ -1,47 +1,33 @@
 Package: KineticEval
 Type: Package
-Title: Kinetic Evaluations by NLLS,
-    IRLS and MCMC
-Author: Zhenglei Gao
-    <zhenglei.gao@gmail.com>
-Maintainer: Zhenglei Gao
-    <zhenglei.gao@gmail.com>
-Depends: R (>= 2.15), mkin,minqa
-Description: This package is
-    developed based on the R package
-    `mkin`. It is used by the KinGUI
-    v2.1. The package is used to
-    determine kinetic parameters from
-    results of environmental fate
-    studies, e.g. aerobic soil
-    degradation, by fitting
-    respective kinetic models to the
-    observed data.The package allows
-    the choice between different
-    optimization algorithms. In
-    particular the estimation of
-    parameter confidence intervals is
-    much improved/corrected as
-    compared to other commonly used
-    evaluation softwares by providing
-    the methods Iteratively
-    Reweighted Least Squares (IRLS)
-    and Markov Chain Monte Carlo
+Title: Kinetic Evaluations by NLLS, IRLS and MCMC
+Author: Zhenglei Gao <zhenglei.gao@gmail.com>
+Maintainer: Zhenglei Gao <zhenglei.gao@gmail.com>
+Depends:
+    R (>= 2.15),
+    mkin,minqa
+Description: This package is developed based on the R package `mkin`.
+    It is used by the KinGUI v2.1. The package is used to determine
+    kinetic parameters from results of environmental fate studies,
+    e.g. aerobic soil degradation, by fitting respective kinetic
+    models to the observed data.The package allows the choice
+    between different optimization algorithms. In particular the
+    estimation of parameter confidence intervals is much
+    improved/corrected as compared to other commonly used
+    evaluation softwares by providing the methods Iteratively
+    Reweighted Least Squares (IRLS) and Markov Chain Monte Carlo
     (MCMC).
 License: GPL (>= 3)
 Encoding: UTF-8
 LazyLoad: yes
-BugReports:
-    http://github.com/zhenglei-gao/KineticEval/issues
-URL:
-    http://zhenglei-gao.github.io/KineticEval/
+BugReports: http://github.com/zhenglei-gao/KineticEval/issues
+URL: http://zhenglei-gao.github.io/KineticEval/
 Imports:
     FME,Rsolnp,optimx,BB,logging,deSolve,coda,minpack.lm,numDeriv
 Suggests:
     MASS,ucminf,Rcgmin,Rvmmin,setRNG
-Authors@R: c(person(given="Zhenglei",
-    family="Gao",
-    email="zhenglei.gao@gmail.com",
-    role=c("aut", "cre")))
-Version: 1.0-42
-Date: 2015-10-16
+Authors@R: c(person(given="Zhenglei", family="Gao",
+        email="zhenglei.gao@gmail.com", role=c("aut", "cre")))
+Version: 1.0-46
+Date: 2016-10-07
+RoxygenNote: 5.0.1

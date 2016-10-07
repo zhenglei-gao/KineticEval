@@ -315,12 +315,25 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
          ###### VERY IMPORTANT HERE, if it is in to and of type DFOP, then not possible to use the other 
          ###### formation of differential equations. so it must be 
          ##corresponding compartment
-         target_box <- switch(spec[[target]]$type,
-                              SFO = target,
-                              FOMC = target,
-                              ##DFOP = target,
-                              DFOP = paste(target,c("sub1","sub2"),sep="_"),
-                              SFORB = paste(target, "free", sep="_"))
+         if(target==parentname){## In this case the target is a parent compound, 
+           ##there is no need to break DFOP into target_sub1 and target_sub2
+           target_box <- switch(spec[[target]]$type,
+                                SFO = target,
+                                FOMC = target,
+                                HS = target,
+                                DFOP = target,
+                                SFORB = paste(target, "free", sep="_"))
+           
+         }else{
+           target_box <- switch(spec[[target]]$type,
+                                SFO = target,
+                                FOMC = target, ## dangerous
+                                HS = target, ## dangerous
+                                DFOP = paste(target,c("sub1","sub2"),sep="_"),
+                                SFORB = paste(target, "free", sep="_"))
+           
+         }
+         
          ## ##########################################################
          ## add starting values for the optimization with formation fractions
          start <-rbind(start,c(FF[index],spec[[varname]]$FF$lower[index],spec[[varname]]$FF$upper[index],spec[[varname]]$FF$fixed[index]))
@@ -481,12 +494,23 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
            ff[paste(origin_box,'to', target, sep="_")] = fraction_really_to_target
            
            if(spec[[varname]]$type %in% c("SFO")){
-             diffs[[target_box[1]]] <- paste(diffs[[target_box[1]]], "+",
-                                             fraction_really_to_target, "*g_",target,"*",
-                                             paste("k", origin_box, sep="_"),'*',origin_box,sep="")
-             diffs[[target_box[2]]] <- paste(diffs[[target_box[2]]], "+",
-                                             fraction_really_to_target, "*(1-g_",target,")*",
-                                             paste("k", origin_box, sep="_"),'*',origin_box,sep="")
+             ## in the case where the metabolites backtransformed into a DFOP parent!
+             if(target==parentname){## In this case the target is a parent compound, 
+               ##there is no need to break DFOP into target_sub1 and target_sub2
+               
+               diffs[[target_box]] <- paste(diffs[[target_box[1]]], "+",
+                                            fraction_really_to_target, "*",
+                                            paste("k", origin_box, sep="_"),'*',origin_box,sep="")
+             }else{
+               diffs[[target_box[1]]] <- paste(diffs[[target_box[1]]], "+",
+                                               fraction_really_to_target, "*g_",target,"*",
+                                               paste("k", origin_box, sep="_"),'*',origin_box,sep="")
+               diffs[[target_box[2]]] <- paste(diffs[[target_box[2]]], "+",
+                                               fraction_really_to_target, "*(1-g_",target,")*",
+                                               paste("k", origin_box, sep="_"),'*',origin_box,sep="")
+               
+             }
+            
            }
            if(spec[[varname]]$type %in% c("FOMC",  "HS")){
              #browser()
@@ -572,6 +596,7 @@ mkinmod.full <- function(...,inpartri=c('default','water-sediment','advanced'),o
          if(spec[[varname]]$type %in% c("SFO", "SFORB")) kFF <- spec[[varname]]$kFF$ini
          for (target in to) {
            index <- match(target,to)
+           
            target_box <- switch(spec[[target]]$type,
                                 SFO = target,
                                 SFORB = paste(target, "free", sep="_"))

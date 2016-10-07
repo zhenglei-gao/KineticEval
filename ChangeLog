@@ -1,5 +1,22 @@
 ChangeLog for package KineticEval
 
+changes in version 1.0-46 (2016-10-07)
+fixed:
+  - #39, Graphing Issues by Kari from SCC.
+
+changes in version 1.0-45 (2016-02-19)
+fixed:
+  - #39, Brigitte's DFOP parent was split when there is back transformation.
+
+changes in version 1.0-44 (2016-01-14)
+fixed:
+  - #38, Carolin's DFOP not working because of DFOP DT90 calculations where
+    uniroot function cannot find the root due to wrongly used min and max values
+
+changes in version 1.0-43 (2015-12-18)
+fixed:
+  - #37, Carolin's DFOP not working because of DFOP DT50 DT90 calculations
+
 changes in version 1.0-42 (2015-10-16)
 fixed:
   - #36, No summary files after successful fit

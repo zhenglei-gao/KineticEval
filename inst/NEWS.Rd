@@ -1,6 +1,35 @@
 \name{NEWS}
 \title{News for Package 'KineticEval'}
 \encoding{UTF-8}
+\section{Changes in KineticEval version 1.0-46 (2016-10-07)}{
+  \subsection{fixed}{
+    \itemize{
+      \item #39, Graphing Issues by Kari from SCC.
+    }
+  }
+}
+\section{Changes in KineticEval version 1.0-45 (2016-02-19)}{
+  \subsection{fixed}{
+    \itemize{
+      \item #39, Brigitte's DFOP parent was split when there is back transformation.
+    }
+  }
+}
+\section{Changes in KineticEval version 1.0-44 (2016-01-14)}{
+  \subsection{fixed}{
+    \itemize{
+      \item #38, Carolin's DFOP not working because of DFOP DT90 calculations where
+        uniroot function cannot find the root due to wrongly used min and max values
+    }
+  }
+}
+\section{Changes in KineticEval version 1.0-43 (2015-12-18)}{
+  \subsection{fixed}{
+    \itemize{
+      \item #37, Carolin's DFOP not working because of DFOP DT50 DT90 calculations
+    }
+  }
+}
 \section{Changes in KineticEval version 1.0-42 (2015-10-16)}{
   \subsection{fixed}{
     \itemize{

@@ -628,7 +628,19 @@ KinEval <- function(mkinmodini,
         if (k2name %in% names(parms.optim)) n.optim <- n.optim + 1
         if (gname %in% names(parms.optim)) n.optim <- n.optim + 1
         if (tbname %in% names(parms.optim)) n.optim <- n.optim + 1
-        
+        ## Change the ouput order for k1, k2, g
+        orderDFOP <- FALSE
+        if(orderDFOP){
+          if (k1name %in% names(parms.optim) | k2name %in% names(parms.optim)){
+            k1 <- parms.optim[k1name]
+            k2 <- parms.optim[k2name]
+            if(k1 > k2) {
+              parms.optim[k1name] <- k2
+              parms.optim[k2name] <- k1
+              parms.optim[gname] <- 1 - parms.optim[gname]
+            }
+          }
+        }
         ##                             #errmin.tmp <- mkinerrmin(errdata.var, n.optim)
         errmin.tmp <- chi2err(errdata.var, n.optim,errobserved.var)
         errmin[obs_var, c("err.min", "n.optim", "df",'err.sig','RMSE','EF','R2')] <- errmin.tmp
@@ -701,7 +713,7 @@ KinEval <- function(mkinmodini,
             ## k1 = parms.all["k1"]
             ## k2 = parms.all["k2"]
             ## g = parms.all["g"]
-            
+           
             k1 = parms.all[k1name]
             k2 = parms.all[k2name]
             g = parms.all[gname]
@@ -716,23 +728,40 @@ KinEval <- function(mkinmodini,
           
             DTmax1 <- log(2)/min(k1,k2)
             DTmin <- log(2)/max(k1,k2)
-            if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
-            resUniroot <- uniroot(fDT,c(DTmin,DTmax1),x=50)
-            DT50.o <- resUniroot$root
-            if(resUniroot$f.root > 1e-4) print("Uniroot calculation for DFOP DT50 might be wrong!Do an optimization, check if the DT50 in the output make sense!")
-            resOptim <- optimize(f, c(DTmin, DTmax1), x=50)
-            DT50.o1 <- resOptim$minimum
-            if(resOptim$objective > 1e-4) print("One dimentional optimization calculation for DFOP DT50 might be wrong!Doing a uniroot calculation, check if the DT50 in the output make sense!")
-            DT50.o <- ifelse(resUniroot$f.root>resOptim$objective, DT50.o1,DT50.o)
-            ##DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
-            DT50 <- DT50.o            
-            DTmin <- log(10)/max(k1,k2)
-            DTmax1 <- log(10)/min(k1,k2)
-            if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
-            DT90.o <- uniroot(fDT,c(DTmin,DTmax1),x=90)$root
-            DT90.o1 <- optimize(f, c(DTmin, DTmax1), x=90)$minimum
-            DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
-            DT90 <- DT90.o
+            if(DTmax1==Inf) {
+              ## This is the case when one of the k is 0.
+              ## The whole proportion won't degrade at all.
+              nondeg <- (k1==0)*g+(k2==0)*(1-g)
+              kdeg <- max(k1,k2)
+              gdeg <- 1-nondeg
+              if(nondeg > 0.5){
+                DT50 <- Inf
+                DT90 <- Inf
+              }else if(nondeg>0.1){
+                DT90 <- Inf
+                DT50 <- log(100*gdeg/(100*gdeg-50))/kdeg
+              }else{
+                DT50 <- log(100*gdeg/(100*gdeg-50))/kdeg
+                DT90 <- log(100*gdeg/(100*gdeg-90))/kdeg
+              }
+            }else{
+              resUniroot <- uniroot(fDT,c(DTmin,DTmax1),x=50)
+              DT50.o <- resUniroot$root
+              if(resUniroot$f.root > 1e-4) print("Uniroot calculation for DFOP DT50 might be wrong!Do an optimization, check if the DT50 in the output make sense!")
+              resOptim <- optimize(f, c(DTmin, DTmax1), x=50)
+              DT50.o1 <- resOptim$minimum
+              if(resOptim$objective > 1e-4) print("One dimentional optimization calculation for DFOP DT50 might be wrong!Doing a uniroot calculation, check if the DT50 in the output make sense!")
+              DT50.o <- ifelse(resUniroot$f.root>resOptim$objective, DT50.o1,DT50.o)
+              ##DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
+              DT50 <- DT50.o   
+              DTmax1 <- log(10)/min(k1,k2)
+              DTmin <- log(10)/max(k1,k2)
+              DT90.o <- uniroot(fDT,c(DTmin,DTmax1),x=90)$root
+              DT90.o1 <- optimize(f, c(DTmin, DTmax1), x=90)$minimum
+              DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
+              DT90 <- DT90.o
+            }
+            
             }
           if (type == "HS") {
             k1 = parms.all[k1name]
@@ -873,6 +902,7 @@ KinEval <- function(mkinmodini,
             fit$ff[[paste(obs_var, "sink", sep="_")]] = 1 - sum(fit$ff)
           }
           if (type == "DFOP") {
+		 
             k1 = parms.all[k1name]
             k2 = parms.all[k2name]
             g = parms.all[gname]
@@ -888,19 +918,37 @@ KinEval <- function(mkinmodini,
             
             DTmax1 <- log(2)/min(k1,k2)
             DTmin <- log(2)/max(k1,k2)
-            if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
-            DT50.o <- uniroot(fDT,c(DTmin,DTmax1),x=50)$root
-            DT50.o1 <- optimize(f, c(DTmin, DTmax1), x=50)$minimum
-            DT50.o <- ifelse(f(DT50.o,50)>f(DT50.o1,50), DT50.o1,DT50.o)
-            ##DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
-            DT50 <- DT50.o
-            DTmin <- log(10)/max(k1,k2)
-            DTmax1 <- log(10)/min(k1,k2)
-            if(DTmax1==Inf) DTmax1 <- .Machine$double.xmax
-            DT90.o <- uniroot(fDT,c(DTmin,DTmax1),x=90)$root
-            DT90.o1 <- optimize(f, c(DTmin, DTmax1), x=90)$minimum
-            DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
-            DT90 <- DT90.o
+		  if(DTmax1==Inf) {
+		    ## This is the case when one of the k is 0.
+		    ## The whole proportion won't degrade at all.
+		    nondeg <- (k1==0)*g+(k2==0)*(1-g)
+		    kdeg <- max(k1,k2)
+		    gdeg <- 1-nondeg
+		    if(nondeg > 0.5){
+		      DT50 <- Inf
+		      DT90 <- Inf
+		    }else if(nondeg>0.1){
+		      DT90 <- Inf
+		      DT50 <- log(100*gdeg/(100*gdeg-50))/kdeg
+		    }else{
+		      DT50 <- log(100*gdeg/(100*gdeg-50))/kdeg
+		      DT90 <- log(100*gdeg/(100*gdeg-90))/kdeg
+		    }
+		  }else{
+		    resUniroot <- uniroot(fDT,c(DTmin,DTmax1),x=50)
+		    DT50.o <- resUniroot$root
+		    if(resUniroot$f.root > 1e-4) print("Uniroot calculation for DFOP DT50 might be wrong!Do an optimization, check if the DT50 in the output make sense!")
+		    resOptim <- optimize(f, c(DTmin, DTmax1), x=50)
+		    DT50.o1 <- resOptim$minimum
+		    if(resOptim$objective > 1e-4) print("One dimentional optimization calculation for DFOP DT50 might be wrong!Doing a uniroot calculation, check if the DT50 in the output make sense!")
+		    DT50.o <- ifelse(resUniroot$f.root>resOptim$objective, DT50.o1,DT50.o)
+		    ##DT50 = ifelse(DTmax - DT50.o < 0.1, NA, DT50.o)
+		    DT50 <- DT50.o            
+		    DT90.o <- uniroot(fDT,c(DTmin,DTmax1),x=90)$root
+		    DT90.o1 <- optimize(f, c(DTmin, DTmax1), x=90)$minimum
+		    DT90.o <- ifelse(f(DT90.o,90)>f(DT90.o1,90), DT90.o1,DT90.o)
+		    DT90 <- DT90.o
+		  }
             
           }
           if (type == "HS") {
@@ -1249,6 +1297,7 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version=NULL){
         ## fit$ff[[paste(obs_var, "sink", sep="_")]] = 1 - sum(fit$ff)
       }
       if (type == "DFOP") {
+       
         ## k1 = parms.all["k1"]
         ## k2 = parms.all["k2"]
         ## g = parms.all["g"]
@@ -1258,7 +1307,7 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version=NULL){
         f <- function(t, x) {
           ((g * exp( - k1 * t) + (1 - g) * exp( - k2 * t)) - (1 - x/100))^2
         }
-        ##browser()
+        ## browser() ## debug calc DT50 or DT90
         DTmax <- 1000
         DT50.o <- optimize(f, c(0.0001,DTmax), x=50)$minimum
         DTmax1 <- log(2)/min(k1,k2)
@@ -1375,6 +1424,7 @@ summary.mkinmod.full<-function(mkinmodini,ctr=kingui.control(),version=NULL){
         
       }
       if (type == "DFOP") {
+       
         k1 = parms.all[k1name]
         k2 = parms.all[k2name]
         g = parms.all[gname]

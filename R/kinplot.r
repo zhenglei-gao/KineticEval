@@ -29,10 +29,11 @@ kinplot <- function(fit,name=NULL, xlab = "Time", ylab = "Observed", xlim = c(1,
     rownames(subset(fit$start, type == "state")),
     rownames(subset(fit$fixed, type == "state")))
   odeini <- parms.all[ininames]
+  odeini <- odeini[paste0("M0_",names(fit$diffs))]
   names(odeini) <- names(fit$diffs)
 
   outtimes <- seq(xlim[1], xlim[2], length.out=100)
-
+  
   odenames <- c(
     rownames(subset(fit$start, type == "deparm")),
     rownames(subset(fit$fixed, type == "deparm")))
